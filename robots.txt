@@ -1,0 +1,9 @@
+# Client demos are unlisted: keep them out of search results.
+# NOTE: this hides them from crawlers, not from people. The repo is public,
+# so anyone can read every demo's source on GitHub. Don't put anything
+# confidential here.
+
+User-agent: *
+Disallow: /demos/
+
+Sitemap: https://nazmanwr.github.io/sitemap.xml

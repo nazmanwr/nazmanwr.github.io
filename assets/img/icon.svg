@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="NA monogram">
+  <rect width="512" height="512" fill="#17160f"/>
+  <text x="256" y="256"
+        fill="#f4efe6"
+        font-family="Iowan Old Style, Georgia, Times New Roman, serif"
+        font-size="248"
+        font-weight="600"
+        letter-spacing="-8"
+        text-anchor="middle"
+        dominant-baseline="central">NA</text>
+</svg>

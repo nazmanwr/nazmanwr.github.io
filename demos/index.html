@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Demo launcher</title>
+
+<!-- Unlisted: keep this page and everything under it out of search results. -->
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+
+<link rel="stylesheet" href="/assets/css/site.css">
+<link rel="stylesheet" href="/assets/css/demo-shell.css">
+<link rel="icon" href="/assets/img/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/img/icon-180.png">
+<link rel="manifest" href="/manifest.webmanifest">
+
+<meta name="theme-color" content="#faf9f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12110e" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Demos">
+
+<script src="/assets/js/site.js" defer></script>
+<script src="/assets/js/launcher.js" defer></script>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="wordmark" href="/">Nazm Anwar</a>
+    <nav class="nav" aria-label="Primary">
+      <a href="/work.html">Work</a>
+      <a href="/about.html">About</a>
+      <a href="/demos/">Demos</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="launcher-head">
+    <div class="wrap">
+      <p class="eyebrow">Launcher</p>
+      <h1>Demos</h1>
+      <p class="lede">Tap one to open it full screen.</p>
+
+      <p class="warn">
+        <strong>Unlisted, not private.</strong> These pages are hidden from search
+        engines, but the repository is public — anyone can read their source on
+        GitHub. Don't put confidential client material here.
+      </p>
+
+      <div class="filter-bar">
+        <label class="sr-only" for="demo-search">Search demos</label>
+        <input id="demo-search" type="search" placeholder="Search by client or title…"
+               autocomplete="off" autocorrect="off" spellcheck="false">
+        <div class="chips" id="demo-chips"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="border-top: 0; padding-top: 2rem;">
+    <div class="wrap">
+      <ul class="grid" id="demo-grid">
+        <li class="empty">Loading demos…</li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span>© <span data-year>2026</span> Nazm Anwar</span>
+    <span><a href="/">Back to site</a></span>
+  </div>
+</footer>
+
+</body>
+</html>

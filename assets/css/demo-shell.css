@@ -1,0 +1,259 @@
+/* ==========================================================================
+   demo-shell.css — full-screen chrome for a demo running on iPad
+   Loaded by demo pages and the launcher. Depends on tokens from site.css.
+   ========================================================================== */
+
+/* --- Launcher ------------------------------------------------------------- */
+
+.launcher-head { padding-block: clamp(2rem, 6vw, 3.5rem) 1.5rem; }
+
+.launcher-head .warn {
+  display: inline-block;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  background: var(--accent-soft);
+  border-left: 2px solid var(--accent);
+  padding: 0.7rem 1rem;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  margin-top: 1.25rem;
+  max-width: 44rem;
+}
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1.75rem;
+}
+
+.filter-bar input[type="search"] {
+  flex: 1 1 15rem;
+  min-height: 48px;
+  padding: 0 1rem;
+  font: inherit;
+  font-size: 1rem;              /* < 16px makes iOS Safari zoom on focus */
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  -webkit-appearance: none;
+  appearance: none;
+}
+.filter-bar input[type="search"]::placeholder { color: var(--ink-faint); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.chip {
+  min-height: 40px;
+  padding: 0 0.9rem;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.18s var(--ease);
+}
+.chip:hover { border-color: var(--ink-faint); }
+.chip[aria-pressed="true"] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--ground);
+  font-weight: 500;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  vertical-align: middle;
+}
+
+.empty {
+  padding: 4rem 0;
+  text-align: center;
+  color: var(--ink-faint);
+}
+
+/* --- Demo shell (inside an individual demo) ------------------------------- */
+
+body.demo {
+  /* Kill the rubber-band bounce. This is what makes a demo stop feeling
+     like a web page and start feeling like an app. */
+  overscroll-behavior: none;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+.demo-bar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 max(0.75rem, var(--safe-l)) 0 max(0.75rem, var(--safe-r));
+  padding-top: var(--safe-t);
+  min-height: calc(3rem + var(--safe-t));
+  background: color-mix(in srgb, var(--ground) 90%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--rule);
+  transition: transform 0.3s var(--ease), opacity 0.3s var(--ease);
+}
+
+/* Auto-hides while presenting; any tap or pointer move brings it back. */
+.demo-bar.is-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.demo-bar__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0 0.75rem;
+  font-size: 0.9375rem;
+  text-decoration: none;
+  color: var(--ink-soft);
+  border-radius: var(--radius);
+}
+.demo-bar__back:hover { background: var(--accent-soft); }
+
+.demo-bar__title {
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.demo-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding-bottom: var(--safe-b);
+}
+
+/* --- Slide deck ----------------------------------------------------------- */
+
+.deck {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  touch-action: pan-y;   /* let deck.js own horizontal swipes */
+}
+
+.slide {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(1.5rem, 5vw, 4rem);
+  padding-inline-start: max(clamp(1.5rem, 5vw, 4rem), var(--safe-l));
+  padding-inline-end: max(clamp(1.5rem, 5vw, 4rem), var(--safe-r));
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(1.5rem);
+  transition: opacity 0.35s var(--ease), transform 0.35s var(--ease), visibility 0.35s;
+}
+.slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+.slide.is-past { transform: translateX(-1.5rem); }
+
+.slide h2 { font-size: clamp(1.9rem, 5.5vw, 3.5rem); max-width: 20ch; }
+.slide p  { font-size: clamp(1rem, 2.3vw, 1.375rem); max-width: 44ch; color: var(--ink-soft); }
+.slide .eyebrow { margin-bottom: 0.75rem; }
+
+.deck-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  padding-bottom: max(0.75rem, var(--safe-b));
+  border-top: 1px solid var(--rule);
+}
+
+.deck-nav button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  font: inherit;
+  font-size: 1.1rem;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.18s var(--ease);
+}
+.deck-nav button:hover:not(:disabled) { border-color: var(--ink); }
+.deck-nav button:disabled { opacity: 0.3; cursor: default; }
+
+.deck-dots { display: flex; gap: 0.5rem; align-items: center; }
+.deck-dots button {
+  width: 28px; height: 28px;
+  border: 0; background: transparent; padding: 0;
+  border-radius: 999px; cursor: pointer;
+  display: grid; place-items: center;
+}
+.deck-dots button::after {
+  content: "";
+  width: 7px; height: 7px;
+  border-radius: 999px;
+  background: var(--rule);
+  transition: background 0.18s var(--ease), transform 0.18s var(--ease);
+}
+.deck-dots button[aria-current="true"]::after {
+  background: var(--accent);
+  transform: scale(1.45);
+}
+
+.deck-count {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8125rem;
+  color: var(--ink-faint);
+  min-width: 4ch;
+  text-align: center;
+}
+
+/* --- Offline notice ------------------------------------------------------- */
+
+.offline-note {
+  position: fixed;
+  left: 50%;
+  bottom: calc(1rem + var(--safe-b));
+  transform: translateX(-50%) translateY(150%);
+  z-index: 60;
+  background: var(--ink);
+  color: var(--ground);
+  font-size: 0.8125rem;
+  padding: 0.6rem 1.1rem;
+  border-radius: 999px;
+  transition: transform 0.3s var(--ease);
+  pointer-events: none;
+  white-space: nowrap;
+}
+.offline-note.is-shown { transform: translateX(-50%) translateY(0); }
