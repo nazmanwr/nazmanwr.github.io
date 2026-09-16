@@ -3,8 +3,11 @@
 Portfolio site and client demo launcher. Plain HTML, CSS and JavaScript — no build
 step, no dependencies. Push to `main` and GitHub Pages serves it within a minute.
 
-**Live:** https://nazmanwr.github.io
-**Launcher:** https://nazmanwr.github.io/demos/
+**Live:** https://nazmanwr.com
+**Launcher:** https://nazmanwr.com/demos/
+
+The old `nazmanwr.github.io` address still works — GitHub permanently redirects it
+to the custom domain, so any link already shared stays good.
 
 ---
 
@@ -149,7 +152,16 @@ since it needs HTTPS.
 
 ## Custom domain
 
-When you buy one: add a `CNAME` file containing the bare domain, point four `A`
-records at GitHub's Pages IPs (and `AAAA` records for IPv6), set the domain under
-**Settings → Pages**, wait for the certificate, then tick **Enforce HTTPS**.
-Update the absolute URLs in `robots.txt` and `sitemap.xml` at the same time.
+`nazmanwr.com`, registered at HostGator, set up 2026-09-16. Done and working —
+this section is just a record of how it's wired.
+
+- **DNS** (HostGator, nameservers `hgns1/hgns2.hostgator.com`): four `A` records
+  on `@` → `185.199.108-111.153`, four `AAAA` → `2606:50c0:8000-8003::153`,
+  and `www` `CNAME` → `nazmanwr.github.io`. TTL 900s.
+- **Verification**: a `_github-pages-challenge-nazmanwr` TXT record proves
+  ownership, so nobody else can claim the domain on GitHub Pages.
+- **`CNAME` file** in this repo root holds the bare domain. Don't delete it —
+  it's what tells Pages which domain to answer for.
+
+If the domain ever moves, the absolute URLs in `robots.txt`, `sitemap.xml` and
+the `og:url` tag in `index.html` need updating too.

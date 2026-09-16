@@ -6,4 +6,4 @@
 User-agent: *
 Disallow: /demos/
 
-Sitemap: https://nazmanwr.github.io/sitemap.xml
+Sitemap: https://nazmanwr.com/sitemap.xml
