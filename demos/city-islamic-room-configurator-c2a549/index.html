@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Room Configurator — City Islamic</title>
+
+  <!-- Unlisted demo: keep it out of search results. -->
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#16181d">
+  <link rel="apple-touch-icon" href="/assets/img/icon-180.png">
+
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Deployment-only additions. The app's own styles are untouched: this is a
+       floating overlay, so it stays clear of the #stage / #panel flex layout. -->
+  <style>
+    #back-to-demos {
+      position: fixed;
+      top: calc(12px + env(safe-area-inset-top, 0px));
+      left: calc(12px + env(safe-area-inset-left, 0px));
+      z-index: 20;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 44px;              /* touch-target floor */
+      padding: 0 14px;
+      border-radius: 999px;
+      background: rgba(22, 24, 29, .72);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+      border: 1px solid #2b2f39;
+      color: #eceef2;
+      font: 500 13px/1 "Segoe UI", system-ui, -apple-system, sans-serif;
+      text-decoration: none;
+      opacity: .4;
+      transition: opacity .2s;
+    }
+    #back-to-demos:hover,
+    #back-to-demos:focus-visible { opacity: 1; }
+
+    /* Below 760px the panel moves under the stage, so the pill would sit on
+       top of the loader text. Tuck it to the right instead. */
+    @media (max-width: 760px) {
+      #back-to-demos { left: auto; right: calc(12px + env(safe-area-inset-right, 0px)); }
+    }
+  </style>
+
+  <!-- Bare-specifier map pointing at the vendored copy of three r160.
+       Nothing here touches the network. -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./vendor/three/build/three.module.js",
+      "three/addons/": "./vendor/three/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <a id="back-to-demos" href="/demos/">&#8592; Demos</a>
+
+  <div id="stage">
+    <div id="loader">
+      <div class="bar"><span></span></div>
+      <p class="status">Loading model…</p>
+    </div>
+
+    <div id="error" hidden>
+      <h2>Can’t load the model</h2>
+      <p class="message"></p>
+    </div>
+  </div>
+
+  <aside id="panel">
+    <header>
+      <p class="eyebrow">Room configurator</p>
+      <h1 id="room-name"></h1>
+    </header>
+
+    <section class="group" id="rooms">
+      <h2 id="rooms-label">Room type</h2>
+    </section>
+
+    <div id="groups"></div>
+
+    <section class="group" id="image-controls">
+      <h2 id="image-controls-label">Image</h2>
+
+      <label class="slider" for="brightness">
+        <span class="slider-label">Brightness <output id="brightness-out">1.00</output></span>
+        <input type="range" id="brightness" min="0.2" max="3" step="0.01" value="1">
+      </label>
+
+      <label class="slider" for="contrast">
+        <span class="slider-label">Contrast <output id="contrast-out">0.00</output></span>
+        <input type="range" id="contrast" min="-0.5" max="0.5" step="0.01" value="0">
+      </label>
+
+      <label class="toggle" for="ao">
+        <input type="checkbox" id="ao" checked>
+        <span>Ambient occlusion</span>
+      </label>
+
+      <button type="button" id="reset-image" class="link-btn">Reset image settings</button>
+    </section>
+
+    <footer>
+      <p id="summary"></p>
+      <button type="button" id="reset-view">Reset view</button>
+      <p class="hint">Drag to orbit · scroll to zoom · right-drag to pan</p>
+    </footer>
+  </aside>
+
+  <script type="module" src="js/main.js"></script>
+
+</body>
+</html>

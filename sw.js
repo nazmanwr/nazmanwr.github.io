@@ -9,7 +9,7 @@
    a stale demo from cache.
    ========================================================================== */
 
-var VERSION = "v2";
+var VERSION = "v3";
 var SHELL   = "shell-" + VERSION;
 var RUNTIME = "runtime-" + VERSION;
 
@@ -65,12 +65,21 @@ self.addEventListener("message", function (event) {
 
 /* --- Strategies ------------------------------------------------------------ */
 
+/* Caching can fail — most often QuotaExceededError, since a single demo here
+   can carry tens of MB of 3D models and iOS Safari is stingy with storage in a
+   normal tab (much more generous once the site is added to the Home Screen).
+   A failed cache write must never reject the response the page is waiting on. */
+function cachePut(request, response) {
+  return caches.open(RUNTIME)
+    .then(function (c) { return c.put(request, response); })
+    .catch(function (err) {
+      console.warn("[sw] could not cache", request.url, err && err.name);
+    });
+}
+
 function networkFirst(request, fallbackUrl) {
   return fetch(request).then(function (response) {
-    if (response && response.ok) {
-      var copy = response.clone();
-      caches.open(RUNTIME).then(function (c) { c.put(request, copy); });
-    }
+    if (response && response.ok) cachePut(request, response.clone());
     return response;
   }).catch(function () {
     return caches.match(request).then(function (hit) {
@@ -87,10 +96,7 @@ function networkFirst(request, fallbackUrl) {
 function staleWhileRevalidate(request) {
   return caches.match(request).then(function (hit) {
     var net = fetch(request).then(function (response) {
-      if (response && response.ok) {
-        var copy = response.clone();
-        caches.open(RUNTIME).then(function (c) { c.put(request, copy); });
-      }
+      if (response && response.ok) cachePut(request, response.clone());
       return response;
     }).catch(function () { return hit; });
 

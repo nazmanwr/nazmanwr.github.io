@@ -1,0 +1,17 @@
+# Normalise text in the repo, check out native line endings on Windows.
+* text=auto
+
+# Binary assets — never touch line endings. Git usually detects these, but
+# silent corruption of a 28 MB model is not a thing to leave to detection.
+*.glb  binary
+*.gltf binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.webp binary
+*.mp4  binary
+*.pdf  binary
+*.woff binary
+*.woff2 binary
+*.7z   binary
+*.zip  binary

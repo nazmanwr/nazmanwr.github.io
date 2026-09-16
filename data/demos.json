@@ -22,6 +22,14 @@
 
   "demos": [
     {
+      "title": "Room configurator",
+      "client": "City Islamic",
+      "type": "app",
+      "slug": "city-islamic-room-configurator-c2a549",
+      "date": "2026-09-16",
+      "notes": "Two room types, switchable furniture and roof layers. 3D — drag to orbit, pinch to zoom. Large models: open it once on wifi before the meeting."
+    },
+    {
       "title": "Product walkthrough",
       "client": "Example Client",
       "type": "deck",
