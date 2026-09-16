@@ -3,33 +3,36 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>NAZM ANWR — Designer</title>
-<meta name="description" content="Designer working across brand, product and interface. Selected work and client demos.">
+<title>NAZM ANWR — Calligraphy</title>
+<meta name="description" content="Calligraphy by Nazm Anwr — available works with sizes and prices.">
 
-<link rel="stylesheet" href="/assets/css/site.css">
+<link rel="stylesheet" href="/assets/css/catalog.css">
 <link rel="icon" href="/assets/img/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/img/icon-180.png">
 <link rel="manifest" href="/manifest.webmanifest">
 
-<meta name="theme-color" content="#faf9f7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#12110e" media="(prefers-color-scheme: dark)">
+<!-- The catalogue is white in every context: one theme-color, no dark variant. -->
+<meta name="theme-color" content="#ffffff">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Demos">
+<meta name="apple-mobile-web-app-title" content="Calligraphy">
 
 <meta property="og:type" content="website">
-<meta property="og:title" content="NAZM ANWR — Designer">
-<meta property="og:description" content="Designer working across brand, product and interface.">
+<meta property="og:title" content="NAZM ANWR — Calligraphy">
+<meta property="og:description" content="Available works with sizes and prices.">
 <meta property="og:url" content="https://nazmanwr.com/">
 
 <script src="/assets/js/site.js" defer></script>
 </head>
 <body>
 
-<a class="skip-link" href="#main">Skip to content</a>
+<a class="skip-link" href="#catalog">Skip to the works</a>
 
-<header class="site-header">
-  <div class="wrap">
-    <a class="wordmark" href="/">NAZM ANWR</a>
+<header class="masthead">
+  <div class="wrap masthead__inner">
+    <div>
+      <a class="wordmark" href="/">NAZM ANWR</a>
+      <p class="masthead__line">Calligraphy — available works</p>
+    </div>
     <nav class="nav" aria-label="Primary">
       <a href="/work.html">Work</a>
       <a href="/about.html">About</a>
@@ -38,90 +41,889 @@
   </div>
 </header>
 
-<main id="main">
+<main id="catalog" class="catalog">
+  <div class="wrap">
 
-  <!-- EDIT: your name, tagline and opening line all live in this block. -->
-  <section class="hero">
-    <div class="wrap">
-      <p class="eyebrow">Designer</p>
-      <h1>I design things people actually have to use.</h1>
-      <p class="lede">
-        Brand, product and interface work for teams who care how it feels in the hand,
-        not just how it looks in the deck.
-      </p>
-      <div class="btn-row">
-        <a class="btn" href="/work.html">See the work</a>
-        <a class="btn btn--ghost" href="/about.html">About me</a>
-      </div>
-    </div>
-  </section>
+    <!-- EDIT: one <li class="piece"> per artwork. Images live in
+         /assets/img/art/ and are numbered to match the catalogue order. -->
+    <ul class="pieces">
 
-  <section class="section">
-    <div class="wrap">
-      <p class="eyebrow">Selected work</p>
-      <!-- EDIT: replace these three cards with your own projects.
-           Duplicate an <li> to add another. Drop images in /assets/img/
-           and swap the .card__media placeholder for an <img>. -->
-      <ul class="grid">
-
-        <li class="card">
-          <a class="card__hit" href="/work.html">
-            <div class="card__media"><span class="placeholder">01</span></div>
-            <div class="card__body">
-              <p class="card__meta">Brand identity · 2026</p>
-              <h3 class="card__title">Project one</h3>
-              <p class="card__desc">A one-line description of what the problem was and what you made.</p>
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/01.png" alt="Patience 8" width="148" height="197" loading="eager" decoding="async">
             </div>
-          </a>
+            <figcaption>
+              <h2 class="piece__title">Patience 8</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>30” × 24”</dd>
+                <dt>Price</dt>
+                <dd>BDT 55,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
         </li>
 
-        <li class="card">
-          <a class="card__hit" href="/work.html">
-            <div class="card__media"><span class="placeholder">02</span></div>
-            <div class="card__body">
-              <p class="card__meta">Product design · 2025</p>
-              <h3 class="card__title">Project two</h3>
-              <p class="card__desc">A one-line description of what the problem was and what you made.</p>
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/02.png" alt="Organized Chaos 01" width="148" height="143" loading="eager" decoding="async">
             </div>
-          </a>
+            <figcaption>
+              <h2 class="piece__title">Organized Chaos 01</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>Dia 14.5”</dd>
+                <dt>Price</dt>
+                <dd>BDT 55,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
         </li>
 
-        <li class="card">
-          <a class="card__hit" href="/work.html">
-            <div class="card__media"><span class="placeholder">03</span></div>
-            <div class="card__body">
-              <p class="card__meta">Interface · 2025</p>
-              <h3 class="card__title">Project three</h3>
-              <p class="card__desc">A one-line description of what the problem was and what you made.</p>
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/03.png" alt="Centralized Chaos 2" width="148" height="107" loading="eager" decoding="async">
             </div>
-          </a>
+            <figcaption>
+              <h2 class="piece__title">Centralized Chaos 2</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>10” × 7”</dd>
+                <dt>Price</dt>
+                <dd>BDT 20,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
         </li>
 
-      </ul>
-    </div>
-  </section>
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/04.png" alt="Abstract Script" width="221" height="225" loading="eager" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Abstract Script</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>5’ × 5’</dd>
+                <dt>Price</dt>
+                <dd>BDT 200,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
 
-  <section class="section">
-    <div class="wrap prose">
-      <p class="eyebrow">Working together</p>
-      <h2>Short engagements, clear deliverables.</h2>
-      <p class="muted">
-        Most projects start with a two-week discovery, then run in focused sprints
-        with something reviewable at the end of each one. If that sounds like what
-        you need, get in touch.
-      </p>
-      <div class="btn-row">
-        <a class="btn" href="/about.html#contact">Start a conversation</a>
-      </div>
-    </div>
-  </section>
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/05.png" alt="Abstract Script" width="148" height="151" loading="eager" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Abstract Script</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>29” × 29”</dd>
+                <dt>Price</dt>
+                <dd>BDT 30,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
 
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/06.png" alt="Patience 04" width="148" height="176" loading="eager" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Patience 04</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>30” × 36”</dd>
+                <dt>Price</dt>
+                <dd>BDT 45,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/07.png" alt="99 Names of Allah" width="219" height="177" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">99 Names of Allah</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>46” × 39”</dd>
+                <dt>Price</dt>
+                <dd>BDT 45,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/08.png" alt="Ayat Ul Kursi" width="208" height="329" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Ayat Ul Kursi</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>3’-6” × 5’-6”</dd>
+                <dt>Price</dt>
+                <dd>BDT 150,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/09.png" alt="Ayat Ul Kursi" width="215" height="382" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Ayat Ul Kursi</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>1’ -4” × 2’-3”</dd>
+                <dt>Price</dt>
+                <dd>BDT 50,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/10.png" alt="Salam" width="221" height="393" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Salam</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>3’ × 5’</dd>
+                <dt>Price</dt>
+                <dd>BDT 150,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/11.png" alt="Sura Ad Duha" width="214" height="145" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Sura Ad Duha</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>70mm × 50mm</dd>
+                <dt>Price</dt>
+                <dd>BDT 45,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/12.png" alt="Ayat Ul Kursi" width="217" height="141" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Ayat Ul Kursi</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>70mm × 50mm</dd>
+                <dt>Price</dt>
+                <dd>BDT 45,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/13.png" alt="Sura Ikhlas" width="220" height="156" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Sura Ikhlas</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>70mm × 50mm</dd>
+                <dt>Price</dt>
+                <dd>BDT 45,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/14.png" alt="Salam" width="234" height="229" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Salam</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>5’ × 5’</dd>
+                <dt>Price</dt>
+                <dd>BDT 150,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece" data-sold>
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/15.png" alt="fabiayyi alai rabbikuma tukazziban" width="172" height="167" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">fabiayyi alai rabbikuma tukazziban</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>2’ × 2’</dd>
+                <dt>Price</dt>
+                <dd class="is-sold"><s>BDT 25,000</s> <em>Sold</em></dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/16.png" alt="allahumma a inni ala zikrika wa shukrika wa husni 'ibadatika" width="142" height="218" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">allahumma a inni ala zikrika wa shukrika wa husni 'ibadatika</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>16” × 24”</dd>
+                <dt>Price</dt>
+                <dd>BDT 20,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/17.png" alt="Salam" width="218" height="219" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Salam</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>5’ × 5’</dd>
+                <dt>Price</dt>
+                <dd>BDT 50,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/18.png" alt="Ikigai (Kanji Calligraphy)" width="75" height="188" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Ikigai (Kanji Calligraphy)</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>10” × 30”</dd>
+                <dt>Price</dt>
+                <dd>BDT 15,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/19.png" alt="Manzil" width="158" height="157" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Manzil</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>17” × 17”</dd>
+                <dt>Price</dt>
+                <dd>BDT 15,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/20.png" alt="A wave of Sabr" width="218" height="129" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">A wave of Sabr</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>20” × 13”</dd>
+                <dt>Price</dt>
+                <dd>BDT 50,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/21.png" alt="Shukr- Gratitude" width="151" height="271" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Shukr- Gratitude</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>13” × 20”</dd>
+                <dt>Price</dt>
+                <dd>BDT 5,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/22.png" alt="Sabr With The Moon" width="153" height="292" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Sabr With The Moon</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>13” × 20”</dd>
+                <dt>Price</dt>
+                <dd>BDT 35,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/23.png" alt="Haab - Love" width="219" height="131" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Haab - Love</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>20” × 13”</dd>
+                <dt>Price</dt>
+                <dd>BDT 20,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/24.png" alt="Sho te ShoThik" width="157" height="260" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Sho te ShoThik</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>13” × 20”</dd>
+                <dt>Price</dt>
+                <dd>BDT 20,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/25.png" alt="Ikra- Read" width="163" height="247" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Ikra- Read</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>16” × 24”</dd>
+                <dt>Price</dt>
+                <dd>BDT 20,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/26.png" alt="রিলস কম কাজ বেশী" width="151" height="247" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">রিলস কম কাজ বেশী</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>13” × 20”</dd>
+                <dt>Price</dt>
+                <dd>BDT 10,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/27.png" alt="Niyaat" width="218" height="345" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Niyaat</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>3’-6” × 5’-6”</dd>
+                <dt>Price</dt>
+                <dd>BDT 180,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/28.png" alt="Alif, Laam, Meem" width="214" height="428" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Alif, Laam, Meem</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>3’ × 6’</dd>
+                <dt>Price</dt>
+                <dd>BDT 180,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/29.png" alt="Sura yaseen" width="217" height="335" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Sura yaseen</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>3’-6” × 5'-6”</dd>
+                <dt>Price</dt>
+                <dd>BDT 180,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/30.png" alt="Salamun kaulam mirrabir rahim" width="214" height="285" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Salamun kaulam mirrabir rahim</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>24” × 30”</dd>
+                <dt>Price</dt>
+                <dd>BDT 200,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/31.png" alt="Fabiayi alai robbikumatu kazzibaan" width="217" height="215" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Fabiayi alai robbikumatu kazzibaan</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>5’ × 5’</dd>
+                <dt>Price</dt>
+                <dd>BDT 150,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece" data-sold>
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/32.png" alt="Sabr" width="214" height="248" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Sabr</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>30” × 36”</dd>
+                <dt>Price</dt>
+                <dd class="is-sold"><s>BDT 35,000</s> <em>Sold</em></dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece" data-sold>
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/33.png" alt="Niyat" width="157" height="201" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Niyat</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>24” × 30”</dd>
+                <dt>Price</dt>
+                <dd class="is-sold"><s>BDT 35,000</s> <em>Sold</em></dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/34.png" alt="Niyat" width="109" height="184" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Niyat</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>14.5” × 24”</dd>
+                <dt>Price</dt>
+                <dd>BDT 10,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/35.png" alt="Lost strokes 20,000 strokes representing 20,000 lost children per year in Bangladesh." width="217" height="221" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Lost strokes 20,000 strokes representing 20,000 lost children per year in Bangladesh.</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>30” × 30”</dd>
+                <dt>Price</dt>
+                <dd>BDT 350,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/36.png" alt="fabiayyi alai rabbikuma tukazziban" width="174" height="171" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">fabiayyi alai rabbikuma tukazziban</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>2’ × 2’</dd>
+                <dt>Price</dt>
+                <dd>BDT 10,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/37.png" alt="Patience 5" width="184" height="231" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Patience 5</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>30” × 36”</dd>
+                <dt>Price</dt>
+                <dd>BDT 35,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/38.png" alt="Sura Ash-Sharh 94:5-6 Most certainly, there is ease with hardship" width="221" height="294" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Sura Ash-Sharh 94:5-6 Most certainly, there is ease with hardship</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>Size on request</dd>
+                <dt>Price</dt>
+                <dd>BDT 350,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/39.png" alt="Imaan" width="171" height="304" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Imaan</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>19” × 36” with frame</dd>
+                <dt>Price</dt>
+                <dd>BDT 35,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/40.png" alt="Imaan" width="174" height="307" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Imaan</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>37” × 27”</dd>
+                <dt>Price</dt>
+                <dd>BDT 35,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/41.png" alt="La ilaha illallahu Muhammadur Rasulullah" width="218" height="122" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">La ilaha illallahu Muhammadur Rasulullah</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>28” × 10”</dd>
+                <dt>Price</dt>
+                <dd>BDT 20,000 <em>Excluding installation</em></dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/42.png" alt="La ilaha illallahu Muhammadur Rasulullah" width="219" height="123" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">La ilaha illallahu Muhammadur Rasulullah</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>28” × 10”</dd>
+                <dt>Price</dt>
+                <dd>BDT 100,000 <em>Excluding installation</em></dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/43.png" alt="Sabr" width="198" height="353" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Sabr</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>13” × 24”</dd>
+                <dt>Price</dt>
+                <dd>BDT 30,000 <em>Excluding installation</em></dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/44.png" alt="Surah Al-Jinn - 18 Majjeed are for allah" width="204" height="362" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Surah Al-Jinn - 18 Majjeed are for allah</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>12” × 12”</dd>
+                <dt>Price</dt>
+                <dd>BDT 30,000 <em>Excluding installation</em></dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/45.png" alt="Surah Al-Jinn - 18 Majjeed are for allah" width="201" height="268" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Surah Al-Jinn - 18 Majjeed are for allah</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>13” × 13”</dd>
+                <dt>Price</dt>
+                <dd>BDT 30,000 <em>Excluding installation</em></dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/46.png" alt="Ihdinas siratal mustakim Guide us to the straight path" width="178" height="237" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Ihdinas siratal mustakim Guide us to the straight path</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>8” × 8”</dd>
+                <dt>Price</dt>
+                <dd>BDT 20,000 <em>Excluding installation</em></dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/47.png" alt="Ihdinas siratal mustakim Guide us to the straight path" width="182" height="243" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Ihdinas siratal mustakim Guide us to the straight path</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>7” × 7”</dd>
+                <dt>Price</dt>
+                <dd>BDT 20,000 <em>Excluding installation</em></dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/48.png" alt="Bismillahir rahmanir raheem" width="176" height="235" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Bismillahir rahmanir raheem</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>12” × 12”</dd>
+                <dt>Price</dt>
+                <dd>BDT 20,000 <em>Excluding installation</em></dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/49.png" alt="Bismillahir rahmanir raheem" width="191" height="255" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Bismillahir rahmanir raheem</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>12.5” × 12.5”</dd>
+                <dt>Price</dt>
+                <dd>BDT 20,000 <em>Excluding installation</em></dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/50.png" alt="Stroke Abstraction" width="146" height="255" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">Stroke Abstraction</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>14” × 20”</dd>
+                <dt>Price</dt>
+                <dd>BDT 15,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+        <li class="piece">
+          <figure>
+            <div class="piece__media">
+              <img src="/assets/img/art/51.png" alt="ধৈর্য্য" width="199" height="266" loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <h2 class="piece__title">ধৈর্য্য</h2>
+              <dl class="piece__spec">
+                <dt>Size</dt>
+                <dd>10” × 14”</dd>
+                <dt>Price</dt>
+                <dd>BDT 6,000</dd>
+              </dl>
+            </figcaption>
+          </figure>
+        </li>
+
+    </ul>
+  </div>
 </main>
 
 <footer class="site-footer">
   <div class="wrap">
     <span>© <span data-year>2026</span> NAZM ANWR</span>
-    <span><a href="/about.html#contact">Contact</a></span>
+    <span>Prices in BDT</span>
+    <span><a href="/about.html#contact">Enquiries</a></span>
   </div>
 </footer>
 

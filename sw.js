@@ -9,7 +9,7 @@
    a stale demo from cache.
    ========================================================================== */
 
-var VERSION = "v4";
+var VERSION = "v5";
 var SHELL   = "shell-" + VERSION;
 var RUNTIME = "runtime-" + VERSION;
 
@@ -22,6 +22,7 @@ var PRECACHE = [
   "/demos/",
   "/demos/index.html",
   "/assets/css/site.css",
+  "/assets/css/catalog.css",
   "/assets/css/demo-shell.css",
   "/assets/js/site.js",
   "/assets/js/deck.js",

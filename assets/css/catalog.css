@@ -1,0 +1,316 @@
+/* ==========================================================================
+   catalog.css — the calligraphy catalogue (front page)
+
+   Deliberately standalone: it does NOT load site.css. The catalogue is white
+   and light-only by design, where the rest of the site is warm and follows the
+   system dark mode. Keeping the two apart means neither can drift into the
+   other when one gets edited.
+
+   Everything is set in Futura. It is installed on iPad and macOS, which is
+   where this page gets shown; elsewhere the stack falls through to the closest
+   geometric sans available.
+   ========================================================================== */
+
+:root {
+  --font: Futura, "Futura PT", "Futura Std", "Century Gothic", "URW Gothic",
+          Jost, "Avenir Next", Avenir, "Trebuchet MS", sans-serif;
+
+  --paper: #ffffff;
+  --tile: #fcfcfb;
+  --ink: #111111;
+  --ink-soft: #5c5c5a;
+  --ink-faint: #8f8f8c;
+  --rule: #e7e7e3;
+
+  --gutter: clamp(1.25rem, 5vw, 4rem);
+
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+
+  /* Light only. No dark-mode block anywhere in this file — that is the point. */
+  color-scheme: light;
+}
+
+/* --- Reset ---------------------------------------------------------------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  padding-left: var(--safe-l);
+  padding-right: var(--safe-r);
+}
+
+h1, h2, p, dl, dd, figure { margin: 0; }
+ul { margin: 0; padding: 0; list-style: none; }
+img { display: block; max-width: 100%; height: auto; }
+
+a { color: inherit; }
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+}
+.skip-link:focus {
+  left: var(--gutter);
+  top: 0.5rem;
+  z-index: 10;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0.5rem 0.9rem;
+  text-decoration: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 78rem;
+  margin: 0 auto;
+  padding-inline: var(--gutter);
+}
+
+/* --- Masthead -------------------------------------------------------------
+   Kept to a wordmark, one line of context, and the links off to the rest of
+   the site. The artworks are the page; this is just the letterhead.
+   -------------------------------------------------------------------------- */
+
+.masthead {
+  padding-top: calc(var(--safe-t) + clamp(2.5rem, 7vw, 5rem));
+  padding-bottom: clamp(2rem, 5vw, 3.5rem);
+}
+
+.masthead__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+}
+
+.wordmark {
+  font-size: clamp(1.25rem, 3.5vw, 1.75rem);
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.masthead__line {
+  margin-top: 0.55rem;
+  font-size: 0.8125rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.nav {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.nav a {
+  text-decoration: none;
+  padding-block: 0.25rem;
+  border-bottom: 1px solid transparent;
+}
+.nav a:hover,
+.nav a[aria-current="page"] { border-bottom-color: var(--ink); }
+
+/* --- The catalogue --------------------------------------------------------
+   minmax(230px, 1fr): the source images top out around 230 px wide, so the
+   columns are sized to sit close to native resolution rather than blowing the
+   artwork up into mush. Replace the files in /assets/img/art/ with larger
+   scans and this number can go up.
+   -------------------------------------------------------------------------- */
+
+.catalog {
+  padding-bottom: clamp(3rem, 8vw, 6rem);
+}
+
+.pieces {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: clamp(2rem, 4vw, 3.25rem) clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.piece__media {
+  display: grid;
+  place-items: center;
+  height: clamp(240px, 32vw, 300px);
+  padding: 1rem;
+  background: var(--tile);
+  border: 1px solid var(--rule);
+}
+
+/* min-height/min-width 0: a grid item's automatic minimum size is its intrinsic
+   size, so without these the tall pieces refuse to shrink and spill out of the
+   tile over the caption below. */
+.piece__media img {
+  max-width: 100%;
+  max-height: 100%;
+  min-width: 0;
+  min-height: 0;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Titles run from one word to four lines. Letting the caption fill the cell and
+   pushing the specs to the bottom keeps every size/price line in a row level. */
+.piece,
+.piece figure {
+  height: 100%;
+}
+
+.piece figure,
+figcaption {
+  display: flex;
+  flex-direction: column;
+}
+
+figcaption {
+  flex: 1;
+  padding-top: 1rem;
+}
+
+.piece__spec {
+  margin-top: auto;
+}
+
+.piece__title {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+}
+
+.piece__spec {
+  display: grid;
+  grid-template-columns: 2.75rem 1fr;
+  gap: 0.2rem 0.75rem;
+  padding-top: 0.6rem;
+  font-size: 0.8125rem;
+}
+
+.piece__spec dt {
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding-top: 0.2em;
+}
+
+.piece__spec dd {
+  color: var(--ink-soft);
+}
+
+.piece__spec em {
+  display: block;
+  font-style: normal;
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+}
+
+.is-sold s {
+  text-decoration-thickness: 1px;
+  color: var(--ink-faint);
+}
+
+.is-sold em {
+  display: inline;
+  margin-left: 0.4rem;
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+/* --- Footer ---------------------------------------------------------------- */
+
+.site-footer {
+  border-top: 1px solid var(--rule);
+  padding-top: 1.5rem;
+  padding-bottom: calc(var(--safe-b) + 2.5rem);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.site-footer .wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 2rem;
+  justify-content: space-between;
+}
+
+.site-footer a { text-decoration: none; border-bottom: 1px solid var(--rule); }
+.site-footer a:hover { border-bottom-color: var(--ink); }
+
+/* --- Offline notice --------------------------------------------------------
+   site.js injects this on every page, so the catalogue has to style it too.
+   -------------------------------------------------------------------------- */
+
+.offline-note {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--safe-b) + 1rem);
+  transform: translate(-50%, 150%);
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0.5rem 1rem;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.offline-note.is-shown { transform: translate(-50%, 0); }
+
+@media (prefers-reduced-motion: reduce) {
+  .offline-note { transition: none; }
+}
+
+/* --- Print -----------------------------------------------------------------
+   A price list gets printed and handed over. Worth the dozen lines.
+   -------------------------------------------------------------------------- */
+
+@media print {
+  .nav, .offline-note, .skip-link { display: none; }
+
+  body { font-size: 11pt; }
+
+  .pieces {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+
+  .piece {
+    break-inside: avoid;
+  }
+
+  .piece__media {
+    height: 170px;
+    background: none;
+  }
+}
