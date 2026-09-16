@@ -23,6 +23,11 @@
   --rule: #e7e7e3;
 
   --gutter: clamp(1.25rem, 5vw, 4rem);
+  --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+
+  /* The viewer fade. Kept deliberately slow, and mirrored by FADE_MS in
+     catalog.js — change one and you must change the other. */
+  --fade: 420ms;
 
   --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
@@ -153,6 +158,12 @@ a { color: inherit; }
   gap: clamp(2rem, 4vw, 3.25rem) clamp(1.5rem, 3vw, 2.5rem);
 }
 
+.piece__hit {
+  display: block;
+  text-decoration: none;
+  cursor: zoom-in;
+}
+
 .piece__media {
   display: grid;
   place-items: center;
@@ -160,6 +171,16 @@ a { color: inherit; }
   padding: 1rem;
   background: var(--tile);
   border: 1px solid var(--rule);
+  overflow: hidden; /* the hover scale is clipped by the tile, not the neighbours */
+}
+
+.piece__media img {
+  transition: transform 0.35s var(--ease);
+}
+
+.piece__hit:hover .piece__media img,
+.piece__hit:focus-visible .piece__media img {
+  transform: scale(1.1);
 }
 
 /* min-height/min-width 0: a grid item's automatic minimum size is its intrinsic
@@ -244,6 +265,148 @@ figcaption {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ink);
+}
+
+/* --- The viewer -----------------------------------------------------------
+   A square panel over a blurred page. The dialog fills the viewport so that
+   any click that is not on the panel is a click on the backdrop, which is what
+   catalog.js tests for to close it.
+   -------------------------------------------------------------------------- */
+
+.has-lightbox {
+  overflow: hidden; /* no scrolling the catalogue behind the viewer */
+}
+
+.lightbox {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: hidden;
+
+  display: grid;
+  place-items: center;
+
+  opacity: 0;
+  transition: opacity var(--fade) var(--ease);
+}
+
+.lightbox.is-open { opacity: 1; }
+
+/* backdrop-filter on ::backdrop is what blurs the catalogue underneath. */
+.lightbox::backdrop {
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(0px);
+  backdrop-filter: blur(0px);
+  opacity: 0;
+  transition: opacity var(--fade) var(--ease),
+              backdrop-filter var(--fade) var(--ease),
+              -webkit-backdrop-filter var(--fade) var(--ease);
+}
+
+.lightbox.is-open::backdrop {
+  -webkit-backdrop-filter: blur(18px) saturate(1.1);
+  backdrop-filter: blur(18px) saturate(1.1);
+  opacity: 1;
+}
+
+.lightbox__panel {
+  position: relative;
+  width: min(86vmin, 820px);
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: clamp(1.25rem, 3vmin, 2.25rem);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.14);
+
+  transform: scale(0.94);
+  transition: transform var(--fade) var(--ease);
+}
+
+.lightbox.is-open .lightbox__panel { transform: scale(1); }
+
+/* Focus is parked here on open; it is a container, not a control, so it must
+   opt out of the global :focus-visible ring as well as plain :focus. */
+.lightbox__panel:focus,
+.lightbox__panel:focus-visible { outline: none; }
+
+.lightbox__stage {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+}
+
+/* Fills the panel rather than sitting at its natural size: the point of the
+   viewer is to see the work big. The source images are small, so anything
+   taller than about 430px is an upscale — replace the files in
+   /assets/img/art/ with full-resolution scans and this gets sharper for free. */
+.lightbox__img {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  object-fit: contain;
+}
+
+.lightbox__caption {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 1rem;
+  padding-right: 2rem; /* clear of the close button */
+}
+
+.lightbox__title {
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.lightbox__spec {
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+}
+
+.lightbox__close {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.5rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--ink-faint);
+  cursor: pointer;
+}
+
+.lightbox__close:hover { color: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .piece__media img,
+  .lightbox,
+  .lightbox::backdrop,
+  .lightbox__panel {
+    transition: none;
+  }
+
+  .piece__hit:hover .piece__media img,
+  .piece__hit:focus-visible .piece__media img {
+    transform: none;
+  }
 }
 
 /* --- Footer ---------------------------------------------------------------- */
