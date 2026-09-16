@@ -1,7 +1,8 @@
 /* ==========================================================================
-   catalog.css — the calligraphy catalogue (front page)
+   catalog.css — the white, Futura side of the site
+   Serves the catalogue (front page) and the about page.
 
-   Deliberately standalone: it does NOT load site.css. The catalogue is white
+   Deliberately standalone: it does NOT load site.css. These pages are white
    and light-only by design, where the rest of the site is warm and follows the
    system dark mode. Keeping the two apart means neither can drift into the
    other when one gets edited.
@@ -266,6 +267,100 @@ figcaption {
   text-transform: uppercase;
   color: var(--ink);
 }
+
+/* --- About page ------------------------------------------------------------
+   Portrait beside the bio, collapsing to a single column on a phone. The
+   measure is held narrower than the catalogue's grid because this is the one
+   page on the white side of the site with running prose on it.
+   -------------------------------------------------------------------------- */
+
+.wrap--narrow { max-width: 58rem; }
+
+.about {
+  padding-bottom: clamp(3rem, 8vw, 6rem);
+}
+
+.about__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+  gap: clamp(1.75rem, 5vw, 3.5rem);
+  align-items: start;
+}
+
+@media (max-width: 46rem) {
+  .about__grid { grid-template-columns: minmax(0, 1fr); }
+  .about__portrait { max-width: 20rem; }
+}
+
+.about__portrait {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border: 1px solid var(--rule);
+  background: var(--tile);
+}
+
+.about__bio p {
+  margin: 0 0 1.1rem;
+  max-width: 36rem;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+
+.about__bio p:last-child { margin-bottom: 0; }
+
+.about__bio p:first-child {
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+/* --- Contact list ---------------------------------------------------------- */
+
+.about__contact {
+  margin-top: clamp(2.5rem, 6vw, 4rem);
+  padding-top: clamp(1.5rem, 3vw, 2rem);
+  border-top: 1px solid var(--rule);
+}
+
+.about__label {
+  margin: 0 0 1rem;
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.contact-list {
+  display: grid;
+  gap: 0.1rem;
+  max-width: 34rem;
+}
+
+.contact-list a,
+.contact-list span.contact-row {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: baseline;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--rule);
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+
+.contact-list a:hover { background: var(--tile); }
+
+.contact-list dt,
+.contact-list .contact-key {
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.contact-list .contact-val { color: var(--ink); }
 
 /* --- The viewer -----------------------------------------------------------
    A square panel over a blurred page. The dialog fills the viewport so that

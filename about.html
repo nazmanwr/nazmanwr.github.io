@@ -4,17 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>About — NAZM ANWR</title>
-<meta name="description" content="About NAZM ANWR — designer working across brand, product and interface.">
+<meta name="description" content="Nazm Anwr is a calligrapher and architect with an active practice in calligraphy since 2000, working across diverse media and spatial contexts.">
 
-<link rel="stylesheet" href="/assets/css/site.css">
+<link rel="stylesheet" href="/assets/css/catalog.css">
 <link rel="icon" href="/assets/img/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/img/icon-180.png">
 <link rel="manifest" href="/manifest.webmanifest">
 
-<meta name="theme-color" content="#faf9f7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#12110e" media="(prefers-color-scheme: dark)">
+<!-- White in every context, matching the catalogue: one theme-color, no dark variant. -->
+<meta name="theme-color" content="#ffffff">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Demos">
+<meta name="apple-mobile-web-app-title" content="Calligraphy">
+
+<meta property="og:type" content="profile">
+<meta property="og:title" content="About — NAZM ANWR">
+<meta property="og:description" content="Calligrapher and architect. Practising calligraphy since 2000.">
+<meta property="og:url" content="https://nazmanwr.com/about.html">
+<meta property="og:image" content="https://nazmanwr.com/assets/img/portrait.jpg">
 
 <script src="/assets/js/site.js" defer></script>
 </head>
@@ -22,9 +28,12 @@
 
 <a class="skip-link" href="#main">Skip to content</a>
 
-<header class="site-header">
-  <div class="wrap">
-    <a class="wordmark" href="/">NAZM ANWR</a>
+<header class="masthead">
+  <div class="wrap wrap--narrow masthead__inner">
+    <div>
+      <a class="wordmark" href="/">NAZM ANWR</a>
+      <p class="masthead__line">Calligrapher &amp; architect</p>
+    </div>
     <nav class="nav" aria-label="Primary">
       <a href="/work.html">Work</a>
       <a href="/about.html">About</a>
@@ -33,95 +42,70 @@
   </div>
 </header>
 
-<main id="main">
+<main id="main" class="about">
+  <div class="wrap wrap--narrow">
 
-  <!-- EDIT: your actual bio goes here. Two or three short paragraphs is plenty. -->
-  <section class="hero">
-    <div class="wrap">
-      <p class="eyebrow">About</p>
-      <h1 class="caps">NAZM ANWR</h1>
-      <p class="lede">
-        I'm a designer. I work with small teams and founders on brand, product
-        and the interfaces in between.
-      </p>
-    </div>
-  </section>
+    <!-- EDIT: bio text and portrait both come from "Nazm Anwr bio.docx". -->
+    <div class="about__grid">
 
-  <section class="section">
-    <div class="wrap prose">
-      <p>
-        Replace this paragraph with how you got here and what you're drawn to.
-        A specific detail beats a list of adjectives — the thing you keep
-        coming back to, the kind of problem you like being handed.
-      </p>
-      <p>
-        And this one with how you actually work: how you start, what a client
-        can expect to see and when, and what you need from them to do it well.
-      </p>
-    </div>
-  </section>
+      <img class="about__portrait"
+           src="/assets/img/portrait.jpg"
+           alt="Nazm Anwr"
+           width="912" height="911"
+           decoding="async">
 
-  <section class="section">
-    <div class="wrap">
-      <p class="eyebrow">What I do</p>
-      <!-- EDIT: rename these to your real services. -->
-      <div class="deflist">
-        <div>
-          <h3>Brand identity</h3>
-          <p>Naming, marks, type systems and the guidelines that keep them intact.</p>
-        </div>
-        <div>
-          <h3>Product &amp; UI</h3>
-          <p>Flows, screens and design systems, built to hand to engineers cleanly.</p>
-        </div>
-        <div>
-          <h3>Art direction</h3>
-          <p>Campaigns, shoots and the visual language that ties a launch together.</p>
-        </div>
+      <div class="about__bio">
+        <p>
+          Nazm Anwr is a calligrapher and architect with an active practice in
+          calligraphy since 2000, working across diverse media and spatial
+          contexts, including numerous public-facing installations and artworks.
+        </p>
+        <p>
+          His practice explores the origins and structural foundations of
+          multiple scripts through the analysis of stroke systems and
+          compositional patterns. By deconstructing and reinterpreting these
+          forms, he develops compositions that merge diverse script traditions
+          and evolve into hybrid conceptual symbols with distinct visual
+          identities.
+        </p>
+        <p>
+          Alongside this experimental and research-driven approach, he also
+          practices and presents foundational calligraphic works rooted in
+          individual script traditions.
+        </p>
       </div>
-    </div>
-  </section>
 
-  <section class="section" id="contact">
-    <div class="wrap prose">
-      <p class="eyebrow">Contact</p>
-      <h2>Get in touch</h2>
-      <p class="muted">
-        Tell me what you're working on and roughly when you need it. I'll tell
-        you honestly whether I'm the right fit.
-      </p>
-      <!-- EDIT: swap in your real handles, delete the rows you don't use. -->
-      <ul class="links">
-        <li>
-          <a href="mailto:nazm.anwr@gmail.com">
-            <span>Email</span><span>nazm.anwr@gmail.com</span>
-          </a>
-        </li>
-        <li>
-          <a href="https://github.com/nazmanwr" rel="me noopener" target="_blank">
-            <span>GitHub</span><span>@nazmanwr</span>
-          </a>
-        </li>
-        <li>
-          <a href="#" rel="me noopener" target="_blank">
-            <span>LinkedIn</span><span>Add your URL</span>
-          </a>
-        </li>
-        <li>
-          <a href="#" rel="me noopener" target="_blank">
-            <span>Instagram</span><span>Add your handle</span>
-          </a>
-        </li>
-      </ul>
     </div>
-  </section>
 
+    <section class="about__contact" id="contact">
+      <p class="about__label">Contact</p>
+      <div class="contact-list">
+        <a href="tel:+8801557454040">
+          <span class="contact-key">Phone</span>
+          <span class="contact-val">01557454040</span>
+        </a>
+        <a href="mailto:nazm.anwr@gmail.com">
+          <span class="contact-key">Email</span>
+          <span class="contact-val">nazm.anwr@gmail.com</span>
+        </a>
+        <a href="https://www.instagram.com/nazm_anwr/" rel="me noopener" target="_blank">
+          <span class="contact-key">Instagram</span>
+          <span class="contact-val">@nazm_anwr</span>
+        </a>
+        <a href="https://github.com/nazmanwr" rel="me noopener" target="_blank">
+          <span class="contact-key">GitHub</span>
+          <span class="contact-val">@nazmanwr</span>
+        </a>
+      </div>
+    </section>
+
+  </div>
 </main>
 
 <footer class="site-footer">
-  <div class="wrap">
+  <div class="wrap wrap--narrow">
     <span>© <span data-year>2026</span> NAZM ANWR</span>
-    <span><a href="mailto:nazm.anwr@gmail.com">nazm.anwr@gmail.com</a></span>
+    <span><a href="/">Catalogue</a></span>
   </div>
 </footer>
 
