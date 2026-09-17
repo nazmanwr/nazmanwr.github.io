@@ -379,10 +379,16 @@ figcaption {
    page on the white side of the site with running prose on it.
    -------------------------------------------------------------------------- */
 
-.wrap--narrow { max-width: 58rem; }
-
 .about {
   padding-bottom: clamp(3rem, 8vw, 6rem);
+}
+
+/* The page sits in the same .wrap as every other page, so the masthead and
+   footer line up site-wide; the reading column is held in by the content
+   itself rather than by a narrower wrap. */
+.about__grid,
+.about__contact {
+  max-width: 58rem;
 }
 
 .about__grid {
