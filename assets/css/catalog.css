@@ -163,7 +163,7 @@ a { color: inherit; }
 .piece__hit {
   display: block;
   text-decoration: none;
-  cursor: zoom-in;
+  cursor: pointer;
 }
 
 .piece__media {
