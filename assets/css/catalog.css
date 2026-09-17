@@ -16,6 +16,11 @@
   --font: Futura, "Futura PT", "Futura Std", "Century Gothic", "URW Gothic",
           Jost, "Avenir Next", Avenir, "Trebuchet MS", sans-serif;
 
+  /* Helvetica proper on iPad and macOS; Windows has no Helvetica and
+     substitutes Arial, which is the closest thing it ships. */
+  --font-helvetica: Helvetica, "Helvetica Neue", "Neue Haas Grotesk Text",
+                    Inter, Arial, "Liberation Sans", sans-serif;
+
   --paper: #ffffff;
   --tile: #fcfcfb;
   --ink: #111111;
@@ -321,6 +326,17 @@ figcaption {
 
 .workshop {
   padding-bottom: clamp(3rem, 8vw, 6rem);
+}
+
+/* The one thing on the site deliberately not in Futura. */
+.headline {
+  margin: 0;
+  font-family: var(--font-helvetica);
+  font-size: clamp(1.25rem, 3.4vw, 2.125rem);
+  font-weight: 500;
+  line-height: 1.22;
+  letter-spacing: -0.015em;
+  max-width: 22ch;
 }
 
 .call {
