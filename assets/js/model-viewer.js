@@ -120,7 +120,7 @@ scene.add(new THREE.HemisphereLight(0xdceaf5, 0x4a4a4a, 0.18));
 
 const key = new THREE.DirectionalLight(0xfff4e6, 2.1);
 key.castShadow = true;
-key.shadow.mapSize.set(2048, 2048);
+key.shadow.mapSize.set(1024, 1024);
 key.shadow.bias = -0.0006;
 key.shadow.normalBias = 0.02;
 scene.add(key, key.target);
@@ -331,3 +331,37 @@ renderer.setAnimationLoop(() => {
 
 const resetButton = document.getElementById('reset-view');
 if (resetButton) resetButton.addEventListener('click', resetView);
+
+/* --- Ambient occlusion toggle ----------------------------------------------
+   SSAO renders the scene a second time for depth and normals, so it is the
+   pass to drop first on weaker hardware. The choice is remembered per device:
+   someone who turns it off on an old iPad should not have to do it again on
+   every model.
+-------------------------------------------------------------------------- */
+
+const aoButton = document.getElementById('toggle-ao');
+
+if (aoButton) {
+  const STORE_KEY = 'model-viewer:ao';
+
+  let aoOn = true;
+  try {
+    aoOn = localStorage.getItem(STORE_KEY) !== 'off';
+  } catch (err) {
+    // Private browsing, blocked storage: fall back to on.
+  }
+
+  const applyAO = () => {
+    ssao.enabled = aoOn;
+    aoButton.setAttribute('aria-pressed', String(aoOn));
+    aoButton.textContent = aoOn ? 'AO on' : 'AO off';
+  };
+
+  aoButton.addEventListener('click', () => {
+    aoOn = !aoOn;
+    try { localStorage.setItem(STORE_KEY, aoOn ? 'on' : 'off'); } catch (err) { /* ignore */ }
+    applyAO();
+  });
+
+  applyAO();
+}

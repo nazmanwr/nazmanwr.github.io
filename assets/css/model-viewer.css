@@ -51,10 +51,28 @@ html, body {
   left: calc(12px + env(safe-area-inset-left, 0px));
 }
 
-#reset-view {
+/* Bottom-left cluster. The buttons sit in a row here rather than each being
+   positioned on its own, so adding another one cannot land it on top of a
+   neighbour. */
+.controls {
+  position: fixed;
+  z-index: 20;
   bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   left: calc(12px + env(safe-area-inset-left, 0px));
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.controls .pill {
+  position: static;
   font-family: inherit;
+}
+
+/* Off reads as recessed rather than as a different control. */
+.pill[aria-pressed="false"] {
+  color: #8a8a8f;
+  background: rgba(255, 255, 255, 0.55);
 }
 
 .title {
