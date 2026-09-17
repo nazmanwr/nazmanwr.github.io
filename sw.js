@@ -9,7 +9,7 @@
    a stale demo from cache.
    ========================================================================== */
 
-var VERSION = "v12";
+var VERSION = "v13";
 var SHELL   = "shell-" + VERSION;
 var RUNTIME = "runtime-" + VERSION;
 
@@ -30,7 +30,9 @@ var PRECACHE = [
   "/assets/js/deck.js",
   "/assets/js/launcher.js",
   "/assets/js/demo-shell.js",
-  "/assets/img/icon.svg",
+  "/assets/img/icon-32.png",
+  "/assets/img/icon-192.png",
+  "/assets/img/icon-180.png",
   "/data/demos.json",
   "/manifest.webmanifest"
 ];
