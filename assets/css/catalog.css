@@ -22,6 +22,7 @@
   --ink-soft: #5c5c5a;
   --ink-faint: #8f8f8c;
   --rule: #e7e7e3;
+  --sold: #c0261c;
 
   --gutter: clamp(1.25rem, 5vw, 4rem);
   --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
@@ -265,7 +266,8 @@ figcaption {
   font-size: 0.625rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--ink);
+  color: var(--sold);
+  font-weight: 500;
 }
 
 /* --- Work page (films) ------------------------------------------------------

@@ -1,0 +1,99 @@
+/* ==========================================================================
+   demos-white.css — puts the launcher on the white, Futura side of the site
+
+   Loaded after site.css and demo-shell.css on /demos/ only. Those two drive
+   everything through tokens, so re-pointing the tokens re-skins the whole
+   launcher without touching launcher.js or the markup it generates.
+
+   The page carries data-theme="light" on <html>, which switches off the dark
+   block in site.css (it is guarded by :root:not([data-theme="light"])).
+   Only the launcher loads this — an individual demo keeps the original
+   chrome, since a client's demo should look like itself, not like this site.
+   ========================================================================== */
+
+:root[data-theme="light"] {
+  --font-display: Futura, "Futura PT", "Futura Std", "Century Gothic",
+                  "URW Gothic", Jost, "Avenir Next", Avenir, "Trebuchet MS", sans-serif;
+  --font-body: var(--font-display);
+
+  --ground: #ffffff;
+  --surface: #ffffff;
+  --ink: #111111;
+  --ink-soft: #5c5c5a;
+  --ink-faint: #8f8f8c;
+  --rule: #e7e7e3;
+  --accent: #111111;
+  --accent-soft: #f6f6f4;
+  --radius: 0;
+}
+
+/* The header is flat white here rather than a translucent blur, to match the
+   masthead on the other pages. */
+.site-header {
+  background: var(--ground);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* Wordmark and nav, same treatment as the catalogue masthead. */
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.nav {
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.launcher-head h1 {
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.eyebrow {
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* The warning keeps its emphasis, but as a plain rule rather than a tinted
+   slab — it is the one thing on the page that must not be missed. */
+.launcher-head .warn {
+  background: none;
+  border-left: 2px solid var(--ink);
+  border-radius: 0;
+}
+
+.card__title,
+.card__meta,
+.card__desc {
+  font-family: var(--font-body);
+}
+
+.card__meta {
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.card__title {
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.badge {
+  background: none;
+  border: 1px solid var(--rule);
+  color: var(--ink-soft);
+  font-weight: 500;
+  border-radius: 0;
+}
+
+.chip { border-radius: 0; }
+
+.filter-bar input[type="search"] { border-radius: 0; }
