@@ -9,7 +9,7 @@
    a stale demo from cache.
    ========================================================================== */
 
-var VERSION = "v26";
+var VERSION = "v27";
 var SHELL   = "shell-" + VERSION;
 var RUNTIME = "runtime-" + VERSION;
 
