@@ -12,6 +12,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://nazmanwr.com/workshop.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://nazmanwr.com/about.html</loc>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>

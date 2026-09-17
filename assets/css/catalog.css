@@ -31,6 +31,10 @@
      catalog.js — change one and you must change the other. */
   --fade: 420ms;
 
+  /* How long a thumbnail takes to grow under the cursor. Slow on purpose:
+     the artwork should ease up, not snap. */
+  --hover-ease-ms: 900ms;
+
   --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-l: env(safe-area-inset-left, 0px);
@@ -177,7 +181,7 @@ a { color: inherit; }
 }
 
 .piece__media img {
-  transition: transform 0.35s var(--ease);
+  transition: transform var(--hover-ease-ms) var(--ease);
 }
 
 .piece__hit:hover .piece__media img,
@@ -307,6 +311,47 @@ figcaption {
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+
+/* --- Workshop page ----------------------------------------------------------
+   A plain gallery: no titles, no captions, nothing under the pictures. The
+   photographs reuse .piece__hit and .piece__media so the hover growth and the
+   viewer behave exactly as they do on the catalogue.
+   -------------------------------------------------------------------------- */
+
+.workshop {
+  padding-bottom: clamp(3rem, 8vw, 6rem);
+}
+
+.call {
+  margin: 0;
+  font-size: clamp(0.8125rem, 2.2vw, 1rem);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+
+.call--foot {
+  margin-top: clamp(2.5rem, 6vw, 4rem);
+  padding-top: clamp(1.5rem, 3vw, 2rem);
+  border-top: 1px solid var(--rule);
+  color: var(--ink-soft);
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+  margin-top: clamp(2rem, 5vw, 3.25rem);
+}
+
+/* Square tiles keep 50 photographs of wildly different shapes reading as one
+   grid; the pictures themselves are never cropped, only letterboxed. */
+.gallery .piece__media {
+  height: auto;
+  aspect-ratio: 1;
+  padding: 0.75rem;
 }
 
 /* --- About page ------------------------------------------------------------
@@ -535,8 +580,12 @@ figcaption {
    still happens, it just happens instantly instead of easing — cancelling it
    outright left the thumbnails looking dead to the cursor on any machine with
    Windows' animation effects switched off. */
+/* The thumbnail growth is deliberately left running here. It is small, it only
+   happens under the cursor, and it is the effect this site actually wants —
+   cancelling it is what made the thumbnails look dead on a machine with
+   Windows' animation effects switched off. The viewer's fade and zoom, which
+   take over the whole screen, still go instant. */
 @media (prefers-reduced-motion: reduce) {
-  .piece__media img,
   .lightbox,
   .lightbox::backdrop,
   .lightbox__panel {

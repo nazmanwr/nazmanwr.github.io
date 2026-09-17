@@ -57,6 +57,11 @@
       bits.push(specs[i].textContent.replace(/\s+/g, " ").trim());
     }
     specEl.textContent = bits.join("  ·  ");
+
+    // The workshop gallery has no titles or specs. Hide the caption there
+    // rather than leaving an empty strip under the picture.
+    var caption = dlg.querySelector(".lightbox__caption");
+    if (caption) caption.hidden = !(titleEl.textContent || specEl.textContent);
   }
 
   /* --- Open / close --------------------------------------------------------
