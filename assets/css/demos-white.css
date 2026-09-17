@@ -61,14 +61,6 @@
   color: var(--ink-faint);
 }
 
-/* The warning keeps its emphasis, but as a plain rule rather than a tinted
-   slab — it is the one thing on the page that must not be missed. */
-.launcher-head .warn {
-  background: none;
-  border-left: 2px solid var(--ink);
-  border-radius: 0;
-}
-
 .card__title,
 .card__meta,
 .card__desc {
