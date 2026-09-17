@@ -44,6 +44,14 @@
       "slug": "nazm-infographic-installation-f3a417",
       "date": "2026-09-17",
       "notes": "3D model — drag to orbit, pinch to zoom. 2 MB, quick to open."
+    },
+    {
+      "title": "Bed",
+      "client": "Nazm Anwr",
+      "type": "app",
+      "slug": "nazm-bed-8347ad",
+      "date": "2026-09-17",
+      "notes": "3D model — drag to orbit, pinch to zoom. 3 MB, quick to open."
     }
   ]
 }
