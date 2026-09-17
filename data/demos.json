@@ -28,30 +28,6 @@
       "slug": "city-islamic-room-configurator-c2a549",
       "date": "2026-09-16",
       "notes": "Two room types, switchable furniture and roof layers. 3D — drag to orbit, pinch to zoom. Large models: open it once on wifi before the meeting."
-    },
-    {
-      "title": "Product walkthrough",
-      "client": "Example Client",
-      "type": "deck",
-      "slug": "example-deck-4c1e07",
-      "date": "2026-09-16",
-      "notes": "Sample slide deck. Swipe, use arrow keys, or tap the dots."
-    },
-    {
-      "title": "Interactive prototype",
-      "client": "Example Client",
-      "type": "app",
-      "slug": "example-app-9b2d55",
-      "date": "2026-09-15",
-      "notes": "Sample interactive demo showing the full-screen shell."
-    },
-    {
-      "title": "Live staging build",
-      "client": "Example Client",
-      "type": "link",
-      "url": "https://example.com",
-      "date": "2026-09-14",
-      "notes": "Hosted elsewhere — opens in a new tab. Needs a connection."
     }
   ]
 }
