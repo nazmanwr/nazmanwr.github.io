@@ -1,0 +1,125 @@
+/* ==========================================================================
+   model-viewer.css — chrome for a single-model demo
+   Full-bleed canvas, a back pill, and a reset control. Nothing else: the
+   model is the page.
+   ========================================================================== */
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overscroll-behavior: none;         /* no rubber-band bounce on iPad */
+  background: #f2f2f0;
+  color: #17171a;
+  font-family: Futura, "Futura PT", "Century Gothic", Jost, "Avenir Next",
+               Avenir, "Trebuchet MS", sans-serif;
+}
+
+#stage {
+  position: fixed;
+  inset: 0;
+  touch-action: none;                /* let OrbitControls own the gestures */
+}
+
+#stage canvas { display: block; width: 100%; height: 100%; }
+
+/* --- Overlays -------------------------------------------------------------- */
+
+.pill {
+  position: fixed;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;                  /* touch-target floor */
+  padding: 0 14px;
+  border: 1px solid rgba(23, 23, 26, 0.14);
+  background: rgba(255, 255, 255, 0.78);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: inherit;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#back-to-demos {
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: calc(12px + env(safe-area-inset-left, 0px));
+}
+
+#reset-view {
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  left: calc(12px + env(safe-area-inset-left, 0px));
+  font-family: inherit;
+}
+
+.title {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: calc(12px + env(safe-area-inset-right, 0px));
+  z-index: 20;
+  margin: 0;
+  padding: 0.85rem 0;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #57575c;
+}
+
+.hint {
+  position: fixed;
+  right: calc(12px + env(safe-area-inset-right, 0px));
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index: 20;
+  margin: 0;
+  padding: 0.85rem 0;
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  color: #8a8a8f;
+}
+
+@media (max-width: 40rem) {
+  .title, .hint { display: none; }   /* the model needs the room */
+}
+
+/* --- Loading and failure --------------------------------------------------- */
+
+#loader, #error {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-content: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+#loader[hidden], #error[hidden] { display: none; }
+
+.status {
+  margin: 0;
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #57575c;
+}
+
+#error h2 {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+#error .message {
+  margin: 0;
+  max-width: 28rem;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: #57575c;
+}

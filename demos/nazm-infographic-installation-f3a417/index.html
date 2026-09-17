@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Infographic Installation — NAZM ANWR</title>
+
+<!-- Unlisted demo: keep it out of search results. -->
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+
+<link rel="stylesheet" href="/assets/css/model-viewer.css">
+<link rel="icon" href="/assets/img/icon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/assets/img/icon-180.png">
+
+<meta name="theme-color" content="#f2f2f0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<!-- Bare specifiers pointing at the vendored copy of three r160, shared with
+     the other model demo. Nothing here touches the network. -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "/assets/vendor/three/build/three.module.js",
+    "three/addons/": "/assets/vendor/three/examples/jsm/"
+  }
+}
+</script>
+</head>
+
+<body data-model="model.glb">
+
+<a class="pill" id="back-to-demos" href="/demos/">&#8592; Demos</a>
+<p class="title">Infographic installation</p>
+
+<div id="stage">
+  <div id="loader">
+    <p class="status">Loading model…</p>
+  </div>
+
+  <div id="error" hidden>
+    <h2>Can’t load the model</h2>
+    <p class="message"></p>
+  </div>
+</div>
+
+<button class="pill" type="button" id="reset-view">Reset view</button>
+<p class="hint">Drag to orbit · scroll to zoom · right-drag to pan</p>
+
+<script type="module" src="/assets/js/model-viewer.js"></script>
+
+</body>
+</html>
