@@ -339,6 +339,25 @@ figcaption {
   color: var(--ink-soft);
 }
 
+/* Dials the number. Underlined rather than left bare, because uppercase
+   letterspaced text gives no other clue that it can be tapped. */
+.call--foot a {
+  display: inline-block;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+  /* Vertical padding is here for the thumb, not the look: the line itself is
+     only about 20px tall, which is a mean target for the one thing on this
+     page a visitor is meant to tap. */
+  padding: 0.6em 0 0.4em;
+  transition: border-color 0.25s var(--ease);
+}
+
+.call--foot a:hover,
+.call--foot a:focus-visible {
+  border-bottom-color: currentColor;
+}
+
 .gallery {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
