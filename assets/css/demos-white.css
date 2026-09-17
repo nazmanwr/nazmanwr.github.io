@@ -43,10 +43,29 @@
   text-transform: uppercase;
 }
 
+/* Nav reacts the way it does everywhere else: an underline on hover and on the
+   current page, rather than site.css's tinted pill and bold weight. */
 .nav {
+  gap: 1.5rem;
   font-size: 0.75rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
+}
+
+.nav a {
+  min-height: 0;
+  padding: 0.25rem 0;
+  border-radius: 0;
+  border-bottom: 1px solid transparent;
+  font-size: inherit;
+}
+
+.nav a:hover,
+.nav a[aria-current="page"] {
+  color: var(--ink);
+  background: none;
+  border-bottom-color: var(--ink);
+  font-weight: 400;
 }
 
 .launcher-head h1 {
@@ -59,6 +78,28 @@
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ink-faint);
+}
+
+/* --- Hover ------------------------------------------------------------------
+   Makes a demo card behave like a thumbnail on the catalogue and workshop
+   pages: the picture grows slowly under the cursor, clipped by the tile
+   (.card__media is already overflow: hidden).
+
+   The !important is load-bearing. site.css clamps every transition on the
+   page to 0.01ms under prefers-reduced-motion, which Windows reports whenever
+   animation effects are switched off — without this, the card would snap and
+   the page would feel dead next to the rest of the site. The class selector
+   outranks that rule's universal one, so this wins. Only this small,
+   cursor-triggered growth is exempted; nothing else on the page animates.
+   -------------------------------------------------------------------------- */
+
+.card__media > * {
+  transition: transform 900ms cubic-bezier(0.2, 0.7, 0.3, 1) !important;
+}
+
+.card__hit:hover .card__media > *,
+.card__hit:focus-visible .card__media > * {
+  transform: scale(1.1);
 }
 
 .card__title,
