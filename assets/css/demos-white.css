@@ -25,22 +25,77 @@
   --accent: #111111;
   --accent-soft: #f6f6f4;
   --radius: 0;
+
+  /* Match the measure the other pages use, so the wordmark and the grid start
+     on the same line down the page as they do everywhere else. */
+  --gutter: clamp(1.25rem, 5vw, 4rem);
 }
 
-/* The header is flat white here rather than a translucent blur, to match the
-   masthead on the other pages. */
-.site-header {
-  background: var(--ground);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
+.wrap { max-width: 78rem; }
+
+/* --- Masthead ---------------------------------------------------------------
+   The launcher used site.css's sticky, blurred .site-header. It now carries the
+   same plain masthead as every other page: wordmark, a line of context beneath
+   it, nav on the right, scrolling away with the page rather than pinned.
+
+   These rules mirror .masthead in catalog.css. They are repeated rather than
+   shared because this page is built on site.css and that one is standalone by
+   design — if you change the masthead there, change it here too.
+   -------------------------------------------------------------------------- */
+
+.masthead {
+  padding-top: calc(var(--safe-t) + clamp(2.5rem, 7vw, 5rem));
+  padding-bottom: clamp(2rem, 5vw, 3.5rem);
 }
 
-/* Wordmark and nav, same treatment as the catalogue masthead. */
+.masthead__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  min-height: 0;
+}
+
 .wordmark {
   font-family: var(--font-display);
+  font-size: clamp(1.25rem, 3.5vw, 1.75rem);
   font-weight: 500;
   letter-spacing: 0.22em;
   text-transform: uppercase;
+  text-decoration: none;
+}
+
+.masthead__line {
+  margin: 0.55rem 0 0;
+  font-size: 0.8125rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* --- Launcher heading -------------------------------------------------------
+   Small and uppercase, the way headings read on the other pages, instead of
+   the large display-serif "Demos".
+   -------------------------------------------------------------------------- */
+
+.launcher-head {
+  padding-block: 0 1.5rem;
+}
+
+.launcher-title {
+  margin: 0;
+  font-size: clamp(0.8125rem, 2.2vw, 1rem);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+
+.launcher-note {
+  margin: 0.6rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
 }
 
 /* Nav reacts the way it does everywhere else: an underline on hover and on the
