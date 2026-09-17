@@ -4,17 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Work — NAZM ANWR</title>
-<meta name="description" content="Selected design work: brand, product and interface projects.">
+<meta name="description" content="Films of calligraphy work by Nazm Anwr, across walls and public spaces in Dhaka.">
 
-<link rel="stylesheet" href="/assets/css/site.css">
+<link rel="stylesheet" href="/assets/css/catalog.css">
 <link rel="icon" href="/assets/img/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/img/icon-180.png">
 <link rel="manifest" href="/manifest.webmanifest">
 
-<meta name="theme-color" content="#faf9f7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#12110e" media="(prefers-color-scheme: dark)">
+<!-- White in every context, matching the catalogue: one theme-color, no dark variant. -->
+<meta name="theme-color" content="#ffffff">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Demos">
+<meta name="apple-mobile-web-app-title" content="Calligraphy">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Work — NAZM ANWR">
+<meta property="og:description" content="Films of calligraphy work across walls and public spaces.">
+<meta property="og:url" content="https://nazmanwr.com/work.html">
 
 <script src="/assets/js/site.js" defer></script>
 </head>
@@ -22,9 +27,12 @@
 
 <a class="skip-link" href="#main">Skip to content</a>
 
-<header class="site-header">
-  <div class="wrap">
-    <a class="wordmark" href="/">NAZM ANWR</a>
+<header class="masthead">
+  <div class="wrap masthead__inner">
+    <div>
+      <a class="wordmark" href="/">NAZM ANWR</a>
+      <p class="masthead__line">Work — on site</p>
+    </div>
     <nav class="nav" aria-label="Primary">
       <a href="/work.html">Work</a>
       <a href="/about.html">About</a>
@@ -33,80 +41,87 @@
   </div>
 </header>
 
-<main id="main">
+<main id="main" class="work">
+  <div class="wrap">
 
-  <section class="hero">
-    <div class="wrap">
-      <p class="eyebrow">Work</p>
-      <h1>Selected projects</h1>
-      <p class="lede">
-        A few things worth showing. Each one links to a case study or a live piece.
-      </p>
-    </div>
-  </section>
+    <!-- EDIT: one <li class="film"> per video. Files live in /assets/video/,
+         each with a matching .jpg used as the poster frame. -->
+    <ul class="films">
 
-  <section class="section">
-    <div class="wrap">
-      <!-- EDIT: this is the full project grid. Duplicate an <li> per project.
-           To use a real image, replace the <div class="card__media"> contents:
-             <div class="card__media"><img src="/assets/img/my-project.jpg" alt=""></div>
-           Point href at a case-study page, an external link, or a demo folder. -->
-      <ul class="grid">
+      <li class="film">
+        <div class="film__frame">
+          <video controls preload="none" playsinline
+                 poster="/assets/video/tejgaon.jpg"
+                 width="1280" height="720">
+            <source src="/assets/video/tejgaon.mp4" type="video/mp4">
+          </video>
+        </div>
+        <h2 class="film__title">Tejgaon</h2>
+      </li>
 
-        <li class="card">
-          <a class="card__hit" href="#">
-            <div class="card__media"><span class="placeholder">01</span></div>
-            <div class="card__body">
-              <p class="card__meta">Brand identity · 2026</p>
-              <h3 class="card__title">Project one</h3>
-              <p class="card__desc">What the client needed, what you made, and what changed as a result.</p>
-            </div>
-          </a>
-        </li>
+      <li class="film">
+        <div class="film__frame">
+          <video controls preload="none" playsinline
+                 poster="/assets/video/amtoli-field.jpg"
+                 width="1280" height="720">
+            <source src="/assets/video/amtoli-field.mp4" type="video/mp4">
+          </video>
+        </div>
+        <h2 class="film__title">Amtoli Field</h2>
+      </li>
 
-        <li class="card">
-          <a class="card__hit" href="#">
-            <div class="card__media"><span class="placeholder">02</span></div>
-            <div class="card__body">
-              <p class="card__meta">Product design · 2025</p>
-              <h3 class="card__title">Project two</h3>
-              <p class="card__desc">What the client needed, what you made, and what changed as a result.</p>
-            </div>
-          </a>
-        </li>
+      <li class="film">
+        <div class="film__frame">
+          <video controls preload="none" playsinline
+                 poster="/assets/video/banani.jpg"
+                 width="1280" height="720">
+            <source src="/assets/video/banani.mp4" type="video/mp4">
+          </video>
+        </div>
+        <h2 class="film__title">Banani</h2>
+      </li>
 
-        <li class="card">
-          <a class="card__hit" href="#">
-            <div class="card__media"><span class="placeholder">03</span></div>
-            <div class="card__body">
-              <p class="card__meta">Interface · 2025</p>
-              <h3 class="card__title">Project three</h3>
-              <p class="card__desc">What the client needed, what you made, and what changed as a result.</p>
-            </div>
-          </a>
-        </li>
+      <li class="film">
+        <div class="film__frame">
+          <video controls preload="none" playsinline
+                 poster="/assets/video/darussalam.jpg"
+                 width="1280" height="720">
+            <source src="/assets/video/darussalam.mp4" type="video/mp4">
+          </video>
+        </div>
+        <h2 class="film__title">Darussalam</h2>
+      </li>
 
-        <li class="card">
-          <a class="card__hit" href="#">
-            <div class="card__media"><span class="placeholder">04</span></div>
-            <div class="card__body">
-              <p class="card__meta">Art direction · 2024</p>
-              <h3 class="card__title">Project four</h3>
-              <p class="card__desc">What the client needed, what you made, and what changed as a result.</p>
-            </div>
-          </a>
-        </li>
+      <li class="film">
+        <div class="film__frame">
+          <video controls preload="none" playsinline
+                 poster="/assets/video/dhormo-jar-jar.jpg"
+                 width="1280" height="720">
+            <source src="/assets/video/dhormo-jar-jar.mp4" type="video/mp4">
+          </video>
+        </div>
+        <h2 class="film__title">Dhormo Jar Jar</h2>
+      </li>
 
-      </ul>
-    </div>
-  </section>
+      <li class="film">
+        <div class="film__frame">
+          <video controls preload="none" playsinline
+                 poster="/assets/video/mohakhali-kacha-bazaar.jpg"
+                 width="1280" height="720">
+            <source src="/assets/video/mohakhali-kacha-bazaar.mp4" type="video/mp4">
+          </video>
+        </div>
+        <h2 class="film__title">Mohakhali Kacha Bazaar</h2>
+      </li>
 
+    </ul>
+  </div>
 </main>
 
 <footer class="site-footer">
   <div class="wrap">
     <span>© <span data-year>2026</span> NAZM ANWR</span>
-    <span><a href="/about.html#contact">Contact</a></span>
+    <span><a href="/">Catalogue</a></span>
   </div>
 </footer>
 

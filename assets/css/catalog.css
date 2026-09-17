@@ -268,6 +268,45 @@ figcaption {
   color: var(--ink);
 }
 
+/* --- Work page (films) ------------------------------------------------------
+   Two columns of 16:9 players on a desktop, one on a phone. Nothing preloads
+   until a visitor presses play, so the page stays light however many go here.
+   -------------------------------------------------------------------------- */
+
+.work {
+  padding-bottom: clamp(3rem, 8vw, 6rem);
+}
+
+.films {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 26rem), 1fr));
+  gap: clamp(2rem, 4vw, 3.25rem) clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.film__frame {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--tile);
+  border: 1px solid var(--rule);
+}
+
+.film__frame video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+.film__title {
+  margin: 0;
+  padding-top: 0.9rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
 /* --- About page ------------------------------------------------------------
    Portrait beside the bio, collapsing to a single column on a phone. The
    measure is held narrower than the catalogue's grid because this is the one
@@ -490,17 +529,16 @@ figcaption {
 
 .lightbox__close:hover { color: var(--ink); }
 
+/* Reduced motion takes away the animation, not the feedback. The hover scale
+   still happens, it just happens instantly instead of easing — cancelling it
+   outright left the thumbnails looking dead to the cursor on any machine with
+   Windows' animation effects switched off. */
 @media (prefers-reduced-motion: reduce) {
   .piece__media img,
   .lightbox,
   .lightbox::backdrop,
   .lightbox__panel {
     transition: none;
-  }
-
-  .piece__hit:hover .piece__media img,
-  .piece__hit:focus-visible .piece__media img {
-    transform: none;
   }
 }
 

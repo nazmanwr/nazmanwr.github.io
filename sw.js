@@ -9,7 +9,7 @@
    a stale demo from cache.
    ========================================================================== */
 
-var VERSION = "v8";
+var VERSION = "v9";
 var SHELL   = "shell-" + VERSION;
 var RUNTIME = "runtime-" + VERSION;
 
@@ -118,6 +118,12 @@ self.addEventListener("fetch", function (event) {
 
   // Leave cross-origin traffic alone — external demos, fonts, CDNs.
   if (url.origin !== self.location.origin) return;
+
+  // Video goes straight to the network. Players fetch media with Range
+  // requests, the 206 responses they get back cannot be put in the cache
+  // anyway, and sitting in the middle of that only risks breaking seeking.
+  // The poster frames next to them are ordinary images and stay cached.
+  if (url.pathname.indexOf("/assets/video/") === 0 && url.pathname.slice(-4) === ".mp4") return;
 
   // Page loads: prefer fresh, fall back to cache, then to the 404 page.
   if (request.mode === "navigate") {
