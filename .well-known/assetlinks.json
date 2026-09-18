@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.nazmanwr.twa",
+      "sha256_cert_fingerprints": [
+        "09:DD:67:D5:EC:13:09:3A:CB:DC:DB:0A:17:B5:E2:5D:48:62:30:11:CE:4E:3F:2F:28:FD:3E:05:D8:46:90:08"
+      ]
+    }
+  }
+]
