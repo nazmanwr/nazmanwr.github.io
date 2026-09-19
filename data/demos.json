@@ -35,7 +35,7 @@
       "type": "app",
       "slug": "nazm-calligraphy-frame-994fa6",
       "date": "2026-09-17",
-      "notes": "3D model — drag to orbit, pinch to zoom. 8 MB, so open it once on wifi before the meeting."
+      "notes": "3D model — drag to orbit, pinch to zoom. 15 MB and 472k triangles: open it once on wifi well before the meeting, and switch AO off if it stutters."
     },
     {
       "title": "Infographic installation",
@@ -51,7 +51,7 @@
       "type": "app",
       "slug": "nazm-bed-8347ad",
       "date": "2026-09-17",
-      "notes": "3D model — drag to orbit, pinch to zoom. 8 MB, so open it once on wifi before the meeting."
+      "notes": "3D model — drag to orbit, pinch to zoom. 15 MB and 472k triangles: open it once on wifi well before the meeting, and switch AO off if it stutters."
     }
   ]
 }
