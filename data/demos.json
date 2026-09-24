@@ -52,6 +52,14 @@
       "slug": "nazm-bed-8347ad",
       "date": "2026-09-17",
       "notes": "3D model — drag to orbit, pinch to zoom. 15 MB and 472k triangles: open it once on wifi well before the meeting, and switch AO off if it stutters."
+    },
+    {
+      "title": "Six-hole flute designer",
+      "client": "Nazm Anwr",
+      "type": "app",
+      "slug": "nazm-flute-designer-9729a6",
+      "date": "2026-09-24",
+      "notes": "Enter a scale and the tube's inner and outer diameter; it sizes and places the holes, draws a 1:1 working drawing and a 3D model. Exports SVG, CSV and OpenSCAD."
     }
   ]
 }
