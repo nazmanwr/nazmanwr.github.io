@@ -1,0 +1,281 @@
+/* ==========================================================================
+   admin.css — the screen for putting an artwork up for auction
+
+   Not a public page. Built wide and plain: this gets used once per auction,
+   on an iPad, usually in a hurry.
+   ========================================================================== */
+
+.admin {
+  padding-bottom: clamp(3rem, 8vw, 6rem);
+}
+
+.admin .wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: clamp(1.75rem, 4vw, 3.5rem);
+  align-items: start;
+}
+
+@media (max-width: 56rem) {
+  .admin .wrap { grid-template-columns: minmax(0, 1fr); }
+}
+
+.admin__preview-flag {
+  grid-column: 1 / -1;
+  margin: 0 0 clamp(1.5rem, 3vw, 2.25rem);
+  padding: 0.85rem 1rem;
+  border-left: 2px solid var(--sold);
+  background: rgba(192, 38, 28, 0.04);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+/* --- Steps ----------------------------------------------------------------- */
+
+.step {
+  padding-bottom: clamp(1.5rem, 3vw, 2rem);
+  margin-bottom: clamp(1.5rem, 3vw, 2rem);
+  border-bottom: 1px solid var(--rule);
+}
+
+.step__title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0 0 0.35rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.step__n {
+  display: inline-grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid var(--ink);
+  font-size: 0.6875rem;
+  letter-spacing: 0;
+}
+
+.step__hint {
+  margin: 0 0 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  max-width: 46ch;
+}
+
+/* --- Artwork picker --------------------------------------------------------
+   A grid of the catalogue, because choosing a painting from a list of file
+   names is no way to choose a painting.
+   -------------------------------------------------------------------------- */
+
+.picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 0.5rem;
+  max-height: 22rem;
+  overflow-y: auto;
+  padding: 0.25rem;
+  border: 1px solid var(--rule);
+  background: var(--tile);
+}
+
+.picker__item {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  border: 1px solid transparent;
+  background: var(--paper);
+  cursor: pointer;
+  padding: 0;
+}
+
+.picker__item img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 0.2rem;
+}
+
+.picker__item[aria-checked="true"] {
+  border-color: var(--ink);
+  outline: 2px solid var(--ink);
+  outline-offset: -3px;
+}
+
+.picker__or {
+  margin: 0.9rem 0;
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.upload {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border: 1px dashed var(--ink-faint);
+  cursor: pointer;
+}
+
+.upload__label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.upload input[type="file"] {
+  font: inherit;
+  font-size: 0.8125rem;
+  max-width: 100%;
+}
+
+/* --- Fields ----------------------------------------------------------------- */
+
+.field {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.field__label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.field__note {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+}
+
+.field input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 0.9rem;
+  font: inherit;
+  font-size: 1rem;          /* under 16px makes iOS zoom on focus */
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.field input:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+.field-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0 1rem;
+}
+
+/* --- Actions ----------------------------------------------------------------- */
+
+.admin__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.admin__actions .btn { text-decoration: none; display: grid; place-items: center; }
+
+.admin__msg {
+  margin: 0.9rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  min-height: 1.2em;
+}
+
+.admin__msg.is-error { color: var(--sold); }
+.admin__msg.is-done { color: var(--ink); font-weight: 500; }
+
+/* --- Preview ------------------------------------------------------------------ */
+
+.admin__preview { position: sticky; top: 1.5rem; }
+
+.preview-card {
+  margin-top: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--rule);
+}
+
+/* No fixed aspect ratio: the box takes the shape of the artwork in it. A tall
+   ink-on-paper piece should preview tall, not letterboxed inside a landscape
+   frame it will never be shown in. min-height only stops the box collapsing
+   before anything is chosen. */
+/* width: fit-content makes the tile wrap the artwork rather than sitting full
+   width behind it — otherwise a tall piece shows grey bars down both sides and
+   the preview stops looking like the artwork's own proportions. */
+.preview-card__media {
+  display: grid;
+  place-items: center;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 9rem;
+  margin-inline: auto;
+  padding: 0;
+  background: var(--tile);
+  overflow: hidden;
+}
+
+/* Only the empty state needs a width of its own. */
+.preview-card__media:has(#p-empty:not([hidden])) {
+  width: 100%;
+}
+
+.preview-card__media img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 60vh;     /* a very tall piece should not run off the screen */
+}
+
+.preview-card__empty {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* --- Sign-in gate ----------------------------------------------------------
+   Shown to anyone who is not signed in. Deliberately plain: it should look
+   like a locked door, not like a page with something behind it worth poking.
+   -------------------------------------------------------------------------- */
+
+.gate {
+  grid-column: 1 / -1;
+  max-width: 26rem;
+  padding: clamp(1.5rem, 4vw, 2.25rem) 0;
+}
+
+.gate[hidden] { display: none; }
+
+.gate__title {
+  margin: 0 0 0.75rem;
+  font-size: clamp(0.8125rem, 2.2vw, 1rem);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.gate__note {
+  margin: 0 0 1.5rem;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--ink-soft);
+}
+
+.gate__form .btn { width: 100%; }

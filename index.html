@@ -25,6 +25,8 @@
 <meta property="og:image" content="https://nazmanwr.com/assets/img/og-image.jpg">
 
 <script src="/assets/js/site.js" defer></script>
+<script src="/assets/js/auction-config.js"></script>
+<script src="/assets/js/auction-banner.js" defer></script>
 </head>
 <body>
 
@@ -40,6 +42,7 @@
       <a href="/">Home</a>
       <a href="/work.html">Work</a>
       <a href="/workshop.html">Workshop</a>
+      <a href="/auction.html">Auction</a>
       <a href="/about.html">About</a>
       <a href="/demos/">Demos</a>
     </nav>
@@ -48,6 +51,10 @@
 
 <main id="catalog" class="catalog">
   <div class="wrap">
+
+    <!-- Live auction, when one is running. Takes itself away otherwise, so the
+         catalogue is never left carrying a notice about something that ended. -->
+    <div id="auction-banner" hidden></div>
 
     <!-- EDIT: one <li class="piece"> per artwork. Images live in
          /assets/img/art/ and are numbered to match the catalogue order. -->

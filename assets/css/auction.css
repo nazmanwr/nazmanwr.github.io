@@ -1,0 +1,417 @@
+/* ==========================================================================
+   auction.css — the live auction page
+
+   Loaded after catalog.css, which supplies the tokens, masthead, nav and
+   footer. Only the auction's own parts live here.
+
+   The page has one job beyond showing an artwork: make the clock feel real.
+   Everything that moves — the countdown, the highest bid, the newest bid in
+   the list — is given room and weight, and the last three hours are marked in
+   the same red the catalogue uses for Sold.
+   ========================================================================== */
+
+.auction {
+  padding-bottom: clamp(3rem, 8vw, 6rem);
+}
+
+/* --- Layout ---------------------------------------------------------------- */
+
+.lot {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: clamp(1.75rem, 4vw, 3.5rem);
+  align-items: start;
+}
+
+@media (max-width: 54rem) {
+  .lot { grid-template-columns: minmax(0, 1fr); }
+}
+
+.lot__media {
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: var(--tile);
+  border: 1px solid var(--rule);
+  overflow: hidden;
+}
+
+.lot__media img {
+  max-width: 100%;
+  max-height: min(70vh, 40rem);
+  min-width: 0;
+  min-height: 0;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  transition: transform var(--hover-ease-ms) var(--ease);
+}
+
+.lot__hit { display: block; cursor: pointer; }
+.lot__hit:hover img { transform: scale(1.04); }
+
+/* --- Lot details ----------------------------------------------------------- */
+
+.lot__title {
+  margin: 0;
+  font-size: clamp(1.0625rem, 2.6vw, 1.5rem);
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.lot__spec {
+  margin: 0.6rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+}
+
+/* --- The clock ------------------------------------------------------------- */
+
+.clock {
+  margin-top: clamp(1.5rem, 3vw, 2rem);
+  padding-top: clamp(1.25rem, 2.5vw, 1.75rem);
+  border-top: 1px solid var(--rule);
+}
+
+/* Clock and leader sit side by side, and wrap onto separate lines when the
+   column is too narrow to hold both without crushing them. */
+.clock__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+}
+
+/* Larger than the clock on purpose: the time says how long is left, this says
+   whether it matters to you. */
+.clock__name {
+  margin: 0;
+  font-size: clamp(2rem, 7vw, 3.25rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.clock__name.is-empty {
+  font-size: clamp(1.125rem, 3.5vw, 1.5rem);
+  color: var(--ink-faint);
+}
+
+.clock__label,
+.bidbox__label {
+  margin: 0 0 0.4rem;
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.clock__time {
+  margin: 0;
+  font-size: clamp(1.75rem, 6vw, 2.75rem);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;   /* stops the digits jittering */
+}
+
+/* Inside the extension window the whole block changes colour. It is the one
+   moment the page should feel urgent, so nothing else on it is red. */
+.clock.is-closing .clock__time,
+.clock.is-closing .clock__label { color: var(--sold); }
+
+.clock__note {
+  margin: 0.55rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  max-width: 32ch;
+}
+
+.clock.is-closing .clock__note { color: var(--sold); }
+
+.clock__ends {
+  margin: 0.35rem 0 0;
+  font-size: 0.6875rem;
+  color: var(--ink-faint);
+}
+
+/* --- Current bid ----------------------------------------------------------- */
+
+.standing {
+  margin-top: clamp(1.25rem, 2.5vw, 1.75rem);
+  padding-top: clamp(1.25rem, 2.5vw, 1.75rem);
+  border-top: 1px solid var(--rule);
+}
+
+.standing__amount {
+  margin: 0;
+  font-size: clamp(1.5rem, 5vw, 2.25rem);
+  font-weight: 500;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.standing__who {
+  margin: 0.5rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+}
+
+/* Briefly lifts when a new bid lands, so a change is never missed. */
+@keyframes bid-landed {
+  0%   { background: rgba(192, 38, 28, 0.13); }
+  100% { background: transparent; }
+}
+
+.standing.just-changed {
+  animation: bid-landed 1.4s var(--ease);
+}
+
+/* --- Bidding --------------------------------------------------------------- */
+
+.bidbox {
+  margin-top: clamp(1.25rem, 2.5vw, 1.75rem);
+  padding-top: clamp(1.25rem, 2.5vw, 1.75rem);
+  border-top: 1px solid var(--rule);
+}
+
+.bidbox__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.btn {
+  flex: 1 1 auto;
+  min-height: 48px;
+  padding: 0 1.1rem;
+  font: inherit;
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  cursor: pointer;
+  transition: background 0.2s var(--ease), color 0.2s var(--ease);
+}
+
+.btn:hover { background: var(--ink); color: var(--paper); }
+
+.btn--primary {
+  background: var(--ink);
+  color: var(--paper);
+}
+.btn--primary:hover { background: var(--sold); border-color: var(--sold); }
+
+.btn[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* --- Confirming a raise ---------------------------------------------------- */
+
+.confirm {
+  margin-top: 0.6rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--ink);
+  background: var(--tile);
+}
+
+.confirm[hidden] { display: none; }
+
+.confirm__msg {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.confirm__total {
+  margin: 0.3rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.confirm__row {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.8rem;
+}
+
+.confirm__row .btn { flex: 1 1 0; }
+
+.bidbox__custom {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+
+.bidbox__custom input {
+  flex: 1 1 10rem;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 0.9rem;
+  font: inherit;
+  font-size: 1rem;              /* under 16px makes iOS zoom on focus */
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 0;
+}
+
+.bidbox__custom input::placeholder { color: var(--ink-faint); }
+.bidbox__custom input:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+.bidbox__total {
+  margin: 0.55rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  min-height: 1.2em;
+}
+
+.bidbox__msg {
+  margin: 0.4rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  min-height: 1.2em;
+}
+
+.bidbox__msg.is-error { color: var(--sold); }
+
+/* --- Bid history ----------------------------------------------------------- */
+
+.history {
+  margin-top: clamp(1.75rem, 3.5vw, 2.5rem);
+  padding-top: clamp(1.25rem, 2.5vw, 1.75rem);
+  border-top: 1px solid var(--rule);
+}
+
+.history__list {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  max-width: 34rem;
+}
+
+.history__list li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.75rem;
+  align-items: baseline;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 0.8125rem;
+}
+
+.history__who { color: var(--ink-soft); }
+.history__amount { font-variant-numeric: tabular-nums; }
+
+/* The bid that is currently winning. Marked with the same red as the closing
+   clock, so the two things a bidder needs to see at a glance — how long is
+   left, and who is ahead — carry one colour between them. */
+.history__list li.is-leading {
+  margin-left: -0.75rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--sold);
+  background: rgba(192, 38, 28, 0.045);
+}
+
+.history__list li.is-leading .history__who,
+.history__list li.is-leading .history__amount {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.history__tag {
+  display: inline-block;
+  margin-left: 0.5rem;
+  font-size: 0.5625rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sold);
+  vertical-align: 0.05em;
+}
+
+/* Your own losing bids are worth marking, but quietly — they are context,
+   not an alarm. */
+.history__tag--quiet { color: var(--ink-faint); }
+
+.standing__leader { font-weight: 500; color: var(--ink); }
+
+.history__when {
+  display: block;
+  font-size: 0.6875rem;
+  color: var(--ink-faint);
+}
+
+/* --- Result ---------------------------------------------------------------- */
+
+.result {
+  margin-top: clamp(1.25rem, 2.5vw, 1.75rem);
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--ink);
+}
+
+.result__label {
+  margin: 0 0 0.35rem;
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.result__name {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 500;
+}
+
+/* --- Empty state ----------------------------------------------------------- */
+
+.no-lot {
+  max-width: 34rem;
+  padding: clamp(2rem, 5vw, 3rem) 0;
+}
+
+.no-lot h1 {
+  margin: 0;
+  font-size: clamp(0.8125rem, 2.2vw, 1rem);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.no-lot p {
+  margin: 1rem 0 0;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+
+/* --- Install prompt (iPhone) -----------------------------------------------
+   Web push only reaches an iPhone once the site is on the home screen, so the
+   people who need this prompt are exactly the ones who cannot be told any
+   other way. Shown only to them.
+   -------------------------------------------------------------------------- */
+
+.install-note {
+  margin-top: 1rem;
+  padding: 0.8rem 1rem;
+  border-left: 2px solid var(--ink);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.install-note[hidden] { display: none; }

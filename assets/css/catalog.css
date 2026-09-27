@@ -70,6 +70,21 @@ img { display: block; max-width: 100%; height: auto; }
 
 a { color: inherit; }
 
+/* Present for screen readers, absent on screen — for labels a sighted person
+   gets from context but a screen reader needs spelled out. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 .skip-link {
   position: absolute;
   left: -9999px;
@@ -685,4 +700,106 @@ figcaption {
     height: 170px;
     background: none;
   }
+}
+
+/* --- Live auction strip -----------------------------------------------------
+   Sits above a page's list while an auction is running, and is removed the
+   moment it closes — the page underneath is never left carrying a dead notice.
+   -------------------------------------------------------------------------- */
+
+#auction-banner[hidden] { display: none; }
+
+.abanner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+  padding: 0.75rem 1rem 0.75rem 0.75rem;
+  border: 1px solid var(--ink);
+  text-decoration: none;
+  color: inherit;
+  transition: background var(--hover-ease-ms) var(--ease);
+}
+
+.abanner:hover { background: var(--tile); }
+
+.abanner__media {
+  display: block;
+  width: clamp(48px, 9vw, 72px);
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: var(--tile);
+}
+
+.abanner__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.abanner__body { display: grid; gap: 0.15rem; min-width: 0; }
+
+.abanner__tag {
+  font-size: 0.5625rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--sold);
+}
+
+.abanner__title {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.abanner__facts {
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+}
+
+.abanner__clock { display: grid; gap: 0.1rem; text-align: right; }
+
+.abanner__label {
+  font-size: 0.5625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.abanner__time {
+  font-size: clamp(0.9375rem, 2.4vw, 1.25rem);
+  font-weight: 500;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.abanner.is-closing .abanner__time,
+.abanner.is-closing .abanner__label { color: var(--sold); }
+
+.abanner__cta {
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.abanner:hover .abanner__cta { background: var(--sold); border-color: var(--sold); }
+
+/* On a phone the clock and the button move under the title rather than
+   squeezing four columns into 360px. */
+@media (max-width: 42rem) {
+  .abanner {
+    grid-template-columns: auto minmax(0, 1fr);
+    row-gap: 0.85rem;
+  }
+  .abanner__clock { grid-column: 1 / 2; text-align: left; }
+  .abanner__cta { grid-column: 2 / 3; text-align: center; }
 }

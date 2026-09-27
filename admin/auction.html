@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Put up an auction — NAZM ANWR</title>
+
+<!-- Not for the public, and not for search engines. -->
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+
+<link rel="stylesheet" href="/assets/css/catalog.css">
+<link rel="stylesheet" href="/assets/css/auction.css">
+<link rel="stylesheet" href="/assets/css/admin.css">
+<link rel="icon" href="/assets/img/icon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/assets/img/icon-180.png">
+
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<script src="/assets/js/site.js" defer></script>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap masthead__inner">
+    <div>
+      <a class="wordmark" href="/">NAZM ANWR</a>
+      <p class="masthead__line">Put up an auction</p>
+    </div>
+    <nav class="nav" aria-label="Primary">
+      <a href="/auction.html">View auction page</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="admin">
+  <div class="wrap">
+
+    <!-- What anyone who is not signed in sees. The page itself is public — it
+         has to be, on a static host — so nothing here can do anything until
+         Supabase recognises the account, and the database only lets one
+         account create auctions. -->
+    <section class="gate" id="gate" hidden>
+      <h1 class="gate__title">Sign in</h1>
+      <p class="gate__note">
+        Put in your email and you'll get a link. Opening it signs you in on
+        this device and keeps you signed in, so you only do this once per
+        phone or iPad.
+      </p>
+      <form class="gate__form" id="gate-form">
+        <label class="field">
+          <span class="field__label">Email</span>
+          <input id="gate-email" type="email" autocomplete="email" required
+                 placeholder="nazm.anwr@gmail.com">
+        </label>
+        <button class="btn btn--primary" type="submit">Send me a sign-in link</button>
+      </form>
+      <p class="admin__msg" id="gate-msg"></p>
+    </section>
+
+    <p class="admin__preview-flag" id="preview-flag">
+      <strong>Preview mode.</strong> Nothing here reaches the live site yet —
+      publishing only changes what this browser shows you, so you can walk
+      through it. Once Supabase is connected this same form does it for real.
+      <a href="?signedout=1">See the sign-in screen</a>
+    </p>
+
+    <form class="admin__form" id="auction-form">
+
+      <!-- 1 ------------------------------------------------------------- -->
+      <section class="step">
+        <h2 class="step__title"><span class="step__n">1</span> Choose the artwork</h2>
+        <p class="step__hint">
+          Pick one from your catalogue. These are the same files the catalogue
+          page uses, so it is already the right size.
+        </p>
+        <div class="picker" id="picker" role="radiogroup" aria-label="Artwork"></div>
+
+        <p class="picker__or">or</p>
+
+        <label class="upload">
+          <span class="upload__label">Upload a new photograph</span>
+          <input type="file" id="f-upload" accept="image/*">
+        </label>
+        <p class="field__note" id="upload-note">
+          Straight from a phone is fine — it gets resized here before it goes
+          anywhere, so a 5 MB photo does not become a 5 MB download for every
+          bidder.
+        </p>
+      </section>
+
+      <!-- 2 ------------------------------------------------------------- -->
+      <section class="step">
+        <h2 class="step__title"><span class="step__n">2</span> Describe it</h2>
+
+        <label class="field">
+          <span class="field__label">Title</span>
+          <input id="f-title" name="title" type="text" required
+                 placeholder="Sabr — patience">
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span class="field__label">Medium</span>
+            <input id="f-medium" name="medium" type="text"
+                   placeholder="Ink on paper">
+          </label>
+          <label class="field">
+            <span class="field__label">Size</span>
+            <input id="f-size" name="size" type="text" placeholder="20” × 13”">
+          </label>
+        </div>
+      </section>
+
+      <!-- 3 ------------------------------------------------------------- -->
+      <section class="step">
+        <h2 class="step__title"><span class="step__n">3</span> Set the money</h2>
+
+        <div class="field-row">
+          <label class="field">
+            <span class="field__label">Starting bid</span>
+            <span class="field__note">The least the first bid may be.</span>
+            <input id="f-start" name="start" type="number" inputmode="numeric"
+                   min="1" step="1" required placeholder="20000">
+          </label>
+          <label class="field">
+            <span class="field__label">Lowest bid</span>
+            <span class="field__note">The smallest raise after that.</span>
+            <input id="f-raise" name="raise" type="number" inputmode="numeric"
+                   min="1" step="1" required placeholder="100" value="100">
+          </label>
+        </div>
+      </section>
+
+      <!-- 4 ------------------------------------------------------------- -->
+      <section class="step">
+        <h2 class="step__title"><span class="step__n">4</span> Set the closing time</h2>
+        <p class="step__hint">
+          Remember the extension: a bid in the last three hours pushes this
+          later. This is the earliest it can end, not the latest.
+        </p>
+
+        <div class="field-row">
+          <label class="field">
+            <span class="field__label">Opens</span>
+            <input id="f-starts" name="starts" type="datetime-local" required>
+          </label>
+          <label class="field">
+            <span class="field__label">Scheduled close</span>
+            <input id="f-ends" name="ends" type="datetime-local" required>
+          </label>
+        </div>
+        <p class="field__note" id="duration-note"></p>
+      </section>
+
+      <div class="admin__actions">
+        <button class="btn btn--primary" type="submit" id="publish">Publish auction</button>
+        <a class="btn" href="/auction.html">Cancel</a>
+      </div>
+
+      <p class="admin__msg" id="admin-msg"></p>
+    </form>
+
+    <!-- Live preview of the lot as bidders will meet it. -->
+    <aside class="admin__preview">
+      <p class="clock__label">How it will look</p>
+      <div class="preview-card">
+        <div class="preview-card__media">
+          <img id="p-image" alt="" hidden>
+          <span class="preview-card__empty" id="p-empty">No artwork chosen yet</span>
+        </div>
+        <h3 class="lot__title" id="p-title">Untitled</h3>
+        <p class="lot__spec" id="p-spec"></p>
+        <p class="clock__label" style="margin-top:1rem">Opening price</p>
+        <p class="standing__amount" id="p-start">—</p>
+        <p class="standing__who" id="p-raise"></p>
+      </div>
+    </aside>
+
+  </div>
+</main>
+
+<script src="/assets/js/admin.js" defer></script>
+
+</body>
+</html>

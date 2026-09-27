@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Auction — NAZM ANWR</title>
+<meta name="description" content="Live auction of an original calligraphy work by Nazm Anwr.">
+
+<link rel="canonical" href="https://nazmanwr.com/auction.html">
+<link rel="stylesheet" href="/assets/css/catalog.css">
+<link rel="stylesheet" href="/assets/css/auction.css">
+<link rel="icon" href="/assets/img/icon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/assets/img/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="/assets/img/icon-180.png">
+<link rel="manifest" href="/manifest.webmanifest">
+
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Calligraphy">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Live auction — NAZM ANWR">
+<meta property="og:description" content="Bid on an original calligraphy work.">
+<meta property="og:url" content="https://nazmanwr.com/auction.html">
+<meta property="og:image" content="https://nazmanwr.com/assets/img/og-image.jpg">
+
+<script src="/assets/js/site.js" defer></script>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="masthead">
+  <div class="wrap masthead__inner">
+    <div>
+      <a class="wordmark" href="/">NAZM ANWR</a>
+      <p class="masthead__line">Auction</p>
+    </div>
+    <nav class="nav" aria-label="Primary">
+      <a href="/">Home</a>
+      <a href="/work.html">Work</a>
+      <a href="/workshop.html">Workshop</a>
+      <a href="/auction.html">Auction</a>
+      <a href="/about.html">About</a>
+      <a href="/demos/">Demos</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="auction">
+  <div class="wrap">
+
+    <!-- Shown when nothing is running. -->
+    <section class="no-lot" id="no-lot" hidden>
+      <h1>No auction running just now</h1>
+      <p>
+        Works are put up one at a time, and each runs for a few days. The next
+        one will appear here — follow along on
+        <a href="https://www.instagram.com/nazm_anwr/" rel="me noopener" target="_blank">Instagram</a>
+        to hear when it opens.
+      </p>
+    </section>
+
+    <!-- The lot. -->
+    <section class="lot" id="lot" hidden>
+
+      <div class="lot__media">
+        <a class="lot__hit" id="lot-hit" href="#">
+          <img id="lot-image" src="" alt="" decoding="async">
+        </a>
+      </div>
+
+      <div class="lot__panel">
+        <h1 class="lot__title" id="lot-title"></h1>
+        <p class="lot__spec" id="lot-spec"></p>
+
+        <div class="clock" id="clock">
+          <div class="clock__head">
+            <div class="clock__timing">
+              <p class="clock__label" id="clock-label">Time left</p>
+              <p class="clock__time" id="clock-time">—</p>
+            </div>
+            <div class="clock__leader">
+              <p class="clock__label">Highest bidder now</p>
+              <p class="clock__name" id="clock-name">—</p>
+            </div>
+          </div>
+          <p class="clock__note">
+            A bid in the last three hours pushes the close three hours past
+            that bid. The auction ends when three hours pass with nobody
+            bidding, so it cannot be won in the final seconds.
+          </p>
+          <p class="clock__ends" id="clock-ends"></p>
+        </div>
+
+        <div class="standing" id="standing">
+          <p class="clock__label">Highest bid</p>
+          <p class="standing__amount" id="standing-amount">—</p>
+          <p class="standing__who" id="standing-who"></p>
+        </div>
+
+        <div class="bidbox" id="bidbox" hidden>
+          <p class="bidbox__label">Place a bid</p>
+          <div class="bidbox__row">
+            <button class="btn btn--primary" type="button" id="bid-quick">—</button>
+            <button class="btn" type="button" id="bid-bump">—</button>
+          </div>
+
+          <!-- Only the larger jump asks. The small one is cheap enough that a
+               confirmation would be in the way. -->
+          <div class="confirm" id="bid-confirm" role="group"
+               aria-labelledby="confirm-msg" hidden>
+            <p class="confirm__msg" id="confirm-msg"></p>
+            <p class="confirm__total" id="confirm-total"></p>
+            <div class="confirm__row">
+              <button class="btn btn--primary" type="button" id="confirm-yes">Yes</button>
+              <button class="btn" type="button" id="confirm-no">No</button>
+            </div>
+          </div>
+          <div class="bidbox__custom">
+            <label class="sr-only" for="bid-custom">How much to add to the highest bid</label>
+            <input id="bid-custom" type="number" inputmode="numeric" step="1" placeholder="">
+            <button class="btn" type="button" id="bid-custom-go">Bid</button>
+          </div>
+          <!-- The box takes a raise, so it has to show the total that raise
+               comes to, or nobody knows what they are agreeing to pay. -->
+          <p class="bidbox__total" id="bid-total"></p>
+          <p class="bidbox__msg" id="bid-msg"></p>
+
+          <p class="install-note" id="install-note" hidden>
+            <strong>On iPhone:</strong> tap Share, then <em>Add to Home Screen</em>,
+            to get an alert the moment someone outbids you. Without it, Apple
+            only allows us to email you.
+          </p>
+        </div>
+
+        <div class="result" id="result" hidden>
+          <p class="result__label">Winning bid</p>
+          <p class="result__name" id="result-name"></p>
+        </div>
+
+        <!-- Kept beside the bidding rather than below the artwork: watching the
+             last few bids arrive is part of deciding what to bid. -->
+        <section class="history" id="history" hidden>
+          <p class="clock__label">Bids</p>
+          <ul class="history__list" id="history-list"></ul>
+        </section>
+      </div>
+
+    </section>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span>© <span data-year>2026</span> NAZM ANWR</span>
+    <span>Bids in BDT</span>
+    <span><a href="/about.html#contact">Enquiries</a></span>
+  </div>
+</footer>
+
+<script src="/assets/js/auction-config.js"></script>
+<script src="/assets/js/auction.js" defer></script>
+
+</body>
+</html>
