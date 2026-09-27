@@ -51,3 +51,32 @@ exception
   when duplicate_object then null;   -- already added, nothing to do
 end
 $$;
+
+-- --- Closing on time --------------------------------------------------------
+-- close_due_auctions() in schema.sql decides the winner, but something has to
+-- call it. A minute's granularity is plenty: the close only ever moves later,
+-- and place_bid() refuses a bid past ends_at whether or not the row has been
+-- marked closed yet. This only governs when the winner is announced.
+--
+-- Needs pg_cron: Database -> Extensions -> pg_cron -> enable, before running
+-- this. Without it the block below says so and changes nothing.
+
+do $$
+begin
+  perform 1 from pg_extension where extname = 'pg_cron';
+  if not found then
+    raise notice 'pg_cron is not enabled, so nothing will close automatically. Turn it on under Database -> Extensions and run this file again.';
+    return;
+  end if;
+
+  if exists (select 1 from cron.job where jobname = 'close-due-auctions') then
+    perform cron.unschedule('close-due-auctions');
+  end if;
+
+  perform cron.schedule(
+    'close-due-auctions',
+    '* * * * *',
+    'select public.close_due_auctions();'
+  );
+end
+$$;
