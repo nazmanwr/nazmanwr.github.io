@@ -134,6 +134,46 @@
           </p>
         </div>
 
+        <!-- Bidding needs a name to put on the board and a way to reach the
+             winner, so this is asked once, before the first bid, and never
+             again on this device. -->
+        <section class="join" id="join" hidden>
+          <p class="bidbox__label" id="join-title">Sign up to bid</p>
+          <p class="join__note" id="join-note">
+            Once only — after this you stay signed in on this device. Your phone
+            and address are how the artwork reaches you if you win; nobody else
+            who visits this page can see them.
+          </p>
+
+          <form class="join__form" id="join-form">
+            <label class="field">
+              <span class="field__label">Full name</span>
+              <input id="j-name" type="text" autocomplete="name" required
+                     placeholder="Mostafizur Rahman Khan">
+            </label>
+            <label class="field">
+              <span class="field__label">Phone</span>
+              <input id="j-phone" type="tel" autocomplete="tel" required
+                     placeholder="01712345678">
+            </label>
+            <label class="field">
+              <span class="field__label">Home address</span>
+              <textarea id="j-address" rows="2" autocomplete="street-address"
+                        required placeholder="House, road, area, city"></textarea>
+            </label>
+            <label class="field" id="j-email-field">
+              <span class="field__label">Email</span>
+              <input id="j-email" type="email" autocomplete="email" required
+                     placeholder="you@example.com">
+            </label>
+            <button class="btn btn--primary" type="submit" id="join-go">
+              Send me a sign-in link
+            </button>
+          </form>
+
+          <p class="bidbox__msg" id="join-msg"></p>
+        </section>
+
         <div class="result" id="result" hidden>
           <p class="result__label">Winning bid</p>
           <p class="result__name" id="result-name"></p>
@@ -160,6 +200,7 @@
   </div>
 </footer>
 
+<script src="/assets/vendor/supabase/supabase.js"></script>
 <script src="/assets/js/auction-config.js"></script>
 <script src="/assets/js/auction.js" defer></script>
 

@@ -58,14 +58,9 @@
       <p class="admin__msg" id="gate-msg"></p>
     </section>
 
-    <p class="admin__preview-flag" id="preview-flag">
-      <strong>Preview mode.</strong> Nothing here reaches the live site yet —
-      publishing only changes what this browser shows you, so you can walk
-      through it. Once Supabase is connected this same form does it for real.
-      <a href="?signedout=1">See the sign-in screen</a>
-    </p>
-
-    <form class="admin__form" id="auction-form">
+    <!-- Hidden until the sign-in check comes back, so a signed-out visitor
+         never sees the form at all, not even for a moment. -->
+    <form class="admin__form" id="auction-form" hidden>
 
       <!-- 1 ------------------------------------------------------------- -->
       <section class="step">
@@ -162,7 +157,7 @@
     </form>
 
     <!-- Live preview of the lot as bidders will meet it. -->
-    <aside class="admin__preview">
+    <aside class="admin__preview" hidden>
       <p class="clock__label">How it will look</p>
       <div class="preview-card">
         <div class="preview-card__media">
@@ -180,6 +175,8 @@
   </div>
 </main>
 
+<script src="/assets/vendor/supabase/supabase.js"></script>
+<script src="/assets/js/auction-config.js"></script>
 <script src="/assets/js/admin.js" defer></script>
 
 </body>

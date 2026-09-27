@@ -13,8 +13,8 @@
       decides what is actually accepted. If the two ever disagree, the database
       wins and the page shows its error.
 
-   The data layer sits behind `source` so the page can be built and looked at
-   before Supabase exists. Set window.AUCTION_CONFIG.demo = true for that.
+   Everything that talks to Supabase sits behind `source`, defined in
+   auction-config.js, so this file is only ever about what is on the screen.
    ========================================================================== */
 
 (function () {
@@ -54,7 +54,18 @@
     historyWrap: document.getElementById("history"),
     result: document.getElementById("result"),
     resultName: document.getElementById("result-name"),
-    install: document.getElementById("install-note")
+    install: document.getElementById("install-note"),
+    join: document.getElementById("join"),
+    joinForm: document.getElementById("join-form"),
+    joinTitle: document.getElementById("join-title"),
+    joinNote: document.getElementById("join-note"),
+    joinGo: document.getElementById("join-go"),
+    joinMsg: document.getElementById("join-msg"),
+    jName: document.getElementById("j-name"),
+    jPhone: document.getElementById("j-phone"),
+    jAddress: document.getElementById("j-address"),
+    jEmail: document.getElementById("j-email"),
+    jEmailField: document.getElementById("j-email-field")
   };
 
   var state = {
@@ -62,6 +73,7 @@
     bids: [],
     clockSkewMs: 0,      // serverNow - browserNow
     signedIn: false,
+    profile: null,       // the bidder's own row, once they have one
     busy: false
   };
 
@@ -197,7 +209,113 @@
       b.disabled = !open || state.busy;
     });
     el.custom.disabled = !open || state.busy;
-    el.bidbox.hidden = !state.auction;
+
+    // Someone who has not signed up yet gets the sign-up form in place of the
+    // buttons, rather than buttons that turn out not to work.
+    var ready = !!state.profile;
+    el.bidbox.hidden = !state.auction || (!ready && open);
+    renderJoin(open && !ready);
+  }
+
+  /* --- Signing up ------------------------------------------------------------
+     Two halves, split by an email round trip. Before the link is opened there
+     is no account, so the details are held on this device; after it, they are
+     written to the bidder's own row and the local copy is thrown away.
+  -------------------------------------------------------------------------- */
+
+  var STASH = "auction:signup";
+
+  function stash(d) {
+    try { sessionStorage.setItem(STASH, JSON.stringify(d)); } catch (err) {}
+  }
+
+  function takeStash() {
+    try {
+      var raw = sessionStorage.getItem(STASH);
+      if (!raw) return null;
+      sessionStorage.removeItem(STASH);
+      return JSON.parse(raw);
+    } catch (err) { return null; }
+  }
+
+  function renderJoin(show) {
+    if (!el.join) return;
+    el.join.hidden = !show;
+    if (!show) return;
+
+    // Already signed in, just no details yet: the email step is done, so ask
+    // for the rest and save it straight away.
+    if (state.signedIn) {
+      el.joinTitle.textContent = "One more thing before you bid";
+      el.joinNote.textContent =
+        "You are signed in. This is where the artwork goes if you win, and " +
+        "only you can see it.";
+      el.joinGo.textContent = "Save and start bidding";
+      el.jEmailField.hidden = true;
+      el.jEmail.required = false;
+    } else {
+      el.joinTitle.textContent = "Sign up to bid";
+      el.joinGo.textContent = "Send me a sign-in link";
+      el.jEmailField.hidden = false;
+      el.jEmail.required = true;
+    }
+  }
+
+  function joinSay(text, isError) {
+    el.joinMsg.textContent = text || "";
+    el.joinMsg.classList.toggle("is-error", !!isError);
+  }
+
+  function details() {
+    return {
+      full_name: el.jName.value.trim(),
+      phone: el.jPhone.value.trim(),
+      address: el.jAddress.value.trim(),
+      email: el.jEmail.value.trim()
+    };
+  }
+
+  function saveDetails(d) {
+    joinSay("Saving…");
+    return source.saveProfile(d).then(function (row) {
+      state.profile = row;
+      joinSay("");
+      renderAll(false);
+      say("You can bid now.");
+    }).catch(function (err) {
+      joinSay(err && err.message ? err.message : "Those details would not save.", true);
+    });
+  }
+
+  function onJoin(e) {
+    e.preventDefault();
+    var d = details();
+
+    if (!d.full_name || !d.phone || !d.address) {
+      joinSay("Name, phone and address are all needed.", true);
+      return;
+    }
+
+    if (state.signedIn) { saveDetails(d); return; }
+
+    if (!d.email) { joinSay("An email address is needed for the link.", true); return; }
+
+    joinSay("Sending…");
+    stash(d);
+    source.signIn(d.email).then(function () {
+      joinSay("Check " + d.email + ". Opening the link brings you back here, " +
+              "signed in and ready to bid.");
+    }).catch(function (err) {
+      joinSay("Could not send it: " + (err && err.message), true);
+    });
+  }
+
+  // Coming back from the email link: the account now exists, so the details
+  // that were waiting on this device can be written.
+  function finishSignUp() {
+    if (!state.signedIn || state.profile) return;
+    var held = takeStash();
+    if (held && held.full_name) saveDetails(held);
   }
 
   /* --- The custom box -------------------------------------------------------
@@ -409,9 +527,11 @@
       say("The lowest you can bid now is " + taka(minimumNext()) + ".", true);
       return;
     }
-    if (!state.signedIn) {
-      say("Sign up to bid — it takes a minute.", true);
-      if (typeof source.signIn === "function") source.signIn();
+    if (!state.profile) {
+      say("Sign up first — it takes a minute.", true);
+      renderJoin(true);
+      el.join.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      el.jName.focus();
       return;
     }
 
@@ -441,10 +561,14 @@
       if (data.server_time) {
         state.clockSkewMs = new Date(data.server_time) - Date.now();
       }
+      window.AUCTION_CURRENT_ID = data.auction ? data.auction.id : null;
       state.auction = data.auction;
       state.bids = data.bids || [];
       state.signedIn = !!data.signed_in;
+      state.profile = data.profile || null;
+      if (data.email && el.jEmail && !el.jEmail.value) el.jEmail.value = data.email;
       renderAll(flash);
+      finishSignUp();
     }).catch(function (err) {
       say("Could not reach the auction. " + (err && err.message ? err.message : ""), true);
     });
@@ -488,6 +612,8 @@
   el.custom.addEventListener("keydown", function (e) {
     if (e.key === "Enter") { e.preventDefault(); bidFromCustom(); }
   });
+
+  if (el.joinForm) el.joinForm.addEventListener("submit", onJoin);
 
   maybeOfferInstall();
   refresh(false);

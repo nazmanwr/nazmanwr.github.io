@@ -1,106 +1,224 @@
 /* ==========================================================================
-   auction-config.js — where the auction page gets its data
+   auction-config.js — the auction's connection to Supabase
 
-   Right now this runs in PREVIEW mode: made-up numbers, so the page can be
-   looked at and argued with before any backend exists. Nothing here is real
-   and no bid placed on it goes anywhere.
+   Exposes the same three-and-a-bit functions the preview did — load(),
+   placeBid(), subscribe(), plus the sign-in helpers — so auction.js and
+   auction-banner.js did not change when this replaced the mock.
 
-   When the Supabase project is ready this file is replaced with the real
-   client: same three functions — load(), placeBid(), subscribe() — so
-   auction.js itself does not change.
+   The key below is the publishable one. It is meant to be in the page: it
+   identifies the project, it does not grant anything. What may actually be
+   read or written is decided by the row-level rules in schema.sql, which is
+   why a bidder's phone number and address stay unreadable even though this
+   file is public.
    ========================================================================== */
 
 window.AUCTION_CONFIG = {
-  preview: true,
-  supabaseUrl: "",      // Project Settings -> API -> Project URL
-  supabaseAnonKey: ""   // Project Settings -> API -> anon public
+  url: "https://ipwpeeoesesmerzsenoe.supabase.co",
+  key: "sb_publishable_2-4Z1B4cnpx_UDnlYVQ03A_GulNLoHm"
 };
-
-/* --- Preview data ---------------------------------------------------------
-   A lot mid-flight, deliberately inside the last three hours so the closing
-   state is visible.
--------------------------------------------------------------------------- */
 
 (function () {
   "use strict";
 
-  if (!window.AUCTION_CONFIG.preview) return;
-
-  // Who the preview signs you in as. Every bid you place carries this name,
-  // the way a real bid carries the name you signed up with.
-  var ME = "Mostafizur Rahman Khan";
-
-  // Nothing is running by default. A made-up lot with made-up bidders must
-  // never be what a visitor meets on the live site, so the page starts empty
-  // and only fills if this browser has published one from the admin screen.
-  var auction = null;
-  var bids = [];
-
-  // If a lot was published from the admin screen in this browser, show that
-  // instead of the built-in one, so the whole loop can be walked: fill the
-  // form, publish, come here, bid.
-  try {
-    var saved = localStorage.getItem("auction:preview");
-    if (saved) {
-      var parsed = JSON.parse(saved);
-      if (parsed && parsed.auction) {
-        auction = parsed.auction;
-        bids = Array.isArray(parsed.bids) ? parsed.bids : [];
-      }
-    }
-  } catch (err) {
-    // Blocked storage or bad JSON: fall back to the built-in lot.
+  if (typeof supabase === "undefined" || !supabase.createClient) {
+    console.warn("[auction] the Supabase library did not load");
+    return;
   }
 
-  function persist() {
-    try {
-      localStorage.setItem("auction:preview", JSON.stringify({ auction: auction, bids: bids }));
-    } catch (err) { /* preview only — losing it costs nothing */ }
+  var db = supabase.createClient(
+    window.AUCTION_CONFIG.url,
+    window.AUCTION_CONFIG.key,
+    { auth: { persistSession: true, autoRefreshToken: true } }
+  );
+
+  window.AUCTION_DB = db;     // the admin screen uses the same connection
+
+  // How long a finished auction keeps announcing its winner before the page
+  // goes back to normal.
+  var WINNER_SHOWN_FOR_HOURS = 48;
+
+  var skewMs = 0;
+  var skewTaken = false;
+
+  /* --- The clock ------------------------------------------------------------
+     Read from the server's own Date header rather than from this device. The
+     countdown is only a display — place_bid() judges a bid against the database
+     clock regardless — but a visitor whose laptop is an hour out should still
+     see the right number.
+  -------------------------------------------------------------------------- */
+
+  function takeClock() {
+    if (skewTaken) return Promise.resolve();
+    return fetch(window.AUCTION_CONFIG.url + "/rest/v1/", {
+      method: "HEAD",
+      headers: { apikey: window.AUCTION_CONFIG.key }
+    }).then(function (res) {
+      var d = res.headers.get("date");
+      if (d) { skewMs = new Date(d) - Date.now(); skewTaken = true; }
+    }).catch(function () { /* keep the local clock; it is only the display */ });
   }
+
+  function serverNow() { return Date.now() + skewMs; }
+
+  /* --- Reading --------------------------------------------------------------- */
+
+  function currentAuction() {
+    // Newest first: one lot runs at a time, so the newest row is the one that
+    // matters — either running, or just finished and still naming its winner.
+    return db.from("auctions")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .then(function (r) {
+        if (r.error) throw r.error;
+        var a = (r.data && r.data[0]) || null;
+        if (!a) return null;
+
+        if (a.status === "closed") {
+          var over = serverNow() - new Date(a.ends_at);
+          if (over > WINNER_SHOWN_FOR_HOURS * 3600 * 1000) return null;
+        }
+        return a;
+      });
+  }
+
+  function bidsFor(auctionId, myId) {
+    return db.from("public_bids")
+      .select("id, auction_id, amount, created_at, display_name, bidder_id")
+      .eq("auction_id", auctionId)
+      .order("amount", { ascending: false })
+      .order("created_at", { ascending: true })
+      .then(function (r) {
+        if (r.error) throw r.error;
+        return (r.data || []).map(function (b) {
+          return {
+            id: b.id,
+            amount: b.amount,
+            created_at: b.created_at,
+            display_name: b.display_name,
+            is_you: !!myId && b.bidder_id === myId
+          };
+        });
+      });
+  }
+
+  /* --- Who is bidding --------------------------------------------------------
+     The bidders table holds a phone number and a home address, so it is fenced
+     off by row-level rules: a bidder may read and write exactly one row, their
+     own. This is that read and that write. Nobody — not another bidder, not
+     this page on someone else's device — can reach anyone else's.
+  -------------------------------------------------------------------------- */
+
+  function profileFor(user) {
+    if (!user) return Promise.resolve(null);
+    return db.from("bidders")
+      .select("id, full_name, phone, address, email")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(function (r) {
+        if (r.error) throw r.error;
+        return r.data || null;
+      })
+      .catch(function () { return null; });   // never block the page on this
+  }
+
+  /* --- The shape auction.js expects ------------------------------------------ */
 
   window.AUCTION_SOURCE = {
+
     load: function () {
-      return Promise.resolve({
-        auction: auction,
-        bids: bids,
-        signed_in: true,
-        server_time: new Date().toISOString()
+      return takeClock()
+        .then(function () { return db.auth.getSession(); })
+        .then(function (s) {
+          var user = s && s.data && s.data.session && s.data.session.user;
+          var myId = user ? user.id : null;
+
+          return Promise.all([currentAuction(), profileFor(user)])
+            .then(function (both) {
+              var auction = both[0];
+              var profile = both[1];
+
+              var base = {
+                auction: auction,
+                bids: [],
+                signed_in: !!user,
+                email: user ? user.email : null,
+                profile: profile,
+                server_time: new Date(serverNow()).toISOString()
+              };
+
+              if (!auction) return base;
+
+              return bidsFor(auction.id, myId).then(function (bids) {
+                base.bids = bids;
+                return base;
+              });
+            });
+        });
+    },
+
+    // Written only after the sign-in link has been opened, because until then
+    // there is no account to attach it to.
+    saveProfile: function (d) {
+      return db.auth.getSession().then(function (s) {
+        var user = s && s.data && s.data.session && s.data.session.user;
+        if (!user) throw new Error("You are not signed in yet.");
+
+        return db.from("bidders").upsert({
+          id: user.id,
+          full_name: d.full_name,
+          phone: d.phone,
+          address: d.address,
+          email: d.email || user.email
+        }).select("id, full_name, phone, address, email").single();
+      }).then(function (r) {
+        if (r.error) throw new Error(r.error.message);
+        return r.data;
       });
     },
 
+    // Everything about whether this is allowed — signed in, high enough, still
+    // open, and whether the close moves — is decided inside place_bid().
     placeBid: function (amount) {
-      if (!auction) return Promise.reject(new Error("No auction is running."));
-
-      // Mirrors what place_bid() does server-side, so the preview behaves the
-      // way the real thing will — including the three-hour extension.
-      var highest = bids.length ? bids[0].amount : null;
-      var minimum = highest === null ? auction.start_price : highest + auction.increment;
-
-      if (amount < minimum) {
-        return Promise.reject(new Error("The lowest you can bid now is BDT " +
-          minimum.toLocaleString("en-US") + "."));
-      }
-
-      bids.unshift({
-        id: String(bids.length + 1),
-        amount: amount,
-        display_name: ME,
-        is_you: true,
-        created_at: new Date().toISOString()
-      });
-
-      var left = new Date(auction.ends_at) - Date.now();
-      if (left <= 3 * 60 * 60 * 1000) {
-        auction.ends_at = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString();
-      }
-
-      persist();
-
-      return Promise.resolve();
+      return db.rpc("place_bid", { p_auction_id: window.AUCTION_CURRENT_ID, p_amount: amount })
+        .then(function (r) {
+          if (r.error) throw new Error(r.error.message || "That bid was refused.");
+          return r.data;
+        });
     },
 
-    signIn: function () {
-      return Promise.resolve();
+    // Live updates when the table is published for realtime (see owner.sql).
+    // Without it the page polls, which it does anyway as a safety net.
+    subscribe: function (onChange) {
+      try {
+        db.channel("bids-live")
+          .on("postgres_changes",
+              { event: "INSERT", schema: "public", table: "bids" },
+              function () { onChange(); })
+          .subscribe();
+      } catch (err) {
+        // Realtime not enabled: polling covers it.
+      }
+    },
+
+    /* --- Accounts ----------------------------------------------------------- */
+
+    signIn: function (email) {
+      return db.auth.signInWithOtp({
+        email: email,
+        options: { emailRedirectTo: location.origin + location.pathname }
+      }).then(function (r) {
+        if (r.error) throw new Error(r.error.message);
+        return true;
+      });
+    },
+
+    signOut: function () { return db.auth.signOut(); },
+
+    session: function () {
+      return db.auth.getSession().then(function (s) {
+        return (s && s.data && s.data.session) || null;
+      });
     }
   };
 })();

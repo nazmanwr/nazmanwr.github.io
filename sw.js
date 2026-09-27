@@ -9,7 +9,7 @@
    a stale demo from cache.
    ========================================================================== */
 
-var VERSION = "v35";
+var VERSION = "v36";
 var SHELL   = "shell-" + VERSION;
 var RUNTIME = "runtime-" + VERSION;
 
@@ -33,6 +33,7 @@ var PRECACHE = [
   "/assets/js/auction.js",
   "/assets/js/auction-config.js",
   "/assets/js/auction-banner.js",
+  "/assets/vendor/supabase/supabase.js",
   "/assets/js/model-viewer.js",
   "/assets/css/model-viewer.css",
   "/assets/js/deck.js",

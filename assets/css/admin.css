@@ -20,17 +20,6 @@
   .admin .wrap { grid-template-columns: minmax(0, 1fr); }
 }
 
-.admin__preview-flag {
-  grid-column: 1 / -1;
-  margin: 0 0 clamp(1.5rem, 3vw, 2.25rem);
-  padding: 0.85rem 1rem;
-  border-left: 2px solid var(--sold);
-  background: rgba(192, 38, 28, 0.04);
-  font-size: 0.8125rem;
-  line-height: 1.55;
-  color: var(--ink-soft);
-}
-
 /* --- Steps ----------------------------------------------------------------- */
 
 .step {

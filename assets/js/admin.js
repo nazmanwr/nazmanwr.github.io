@@ -1,20 +1,24 @@
 /* ==========================================================================
    admin.js — putting an artwork up for auction
 
-   In preview mode a published auction is written to this browser's local
-   storage, and the auction page reads it from there. That makes the whole
-   round trip walkable — fill the form, publish, open the auction page, bid —
-   before any backend exists. Nothing leaves the machine.
+   This writes a real auction. Filling the form and pressing publish inserts
+   one row in Supabase, and from that moment the auction page and the strip on
+   the home page show it to everyone.
 
-   When Supabase is connected, publish() becomes one insert against the
-   auctions table and everything above it stays as it is.
+   Two things stand between this page and the database, and neither of them is
+   the page itself — it is public, as any file on a static host must be:
+
+     1. Signed out, nothing here can talk to the database at all.
+     2. Signed in as anybody other than the owner, the database refuses the
+        insert. That rule lives in owner.sql, not in this file, so it cannot be
+        edited away from a browser.
    ========================================================================== */
 
 (function () {
   "use strict";
 
-  var STORE_KEY = "auction:preview";
   var CATALOGUE_COUNT = 51;   // /assets/img/art/full/01.jpg … 51.jpg
+  var BUCKET = "auction";     // where uploaded photographs go
 
   var f = {
     form: document.getElementById("auction-form"),
@@ -41,7 +45,8 @@
     raise: document.getElementById("p-raise")
   };
 
-  var chosen = null;
+  var chosen = null;      // what the preview shows
+  var pending = null;     // an uploaded photograph, waiting to be sent
 
   function taka(n) {
     var v = Number(n);
@@ -93,14 +98,15 @@
     clearPicked();
     btn.setAttribute("aria-checked", "true");
     if (f.upload) f.upload.value = "";     // picking from the catalogue drops an upload
+    pending = null;
     chosen = btn.dataset.path;
     renderPreview();
   }
 
   /* --- Uploading a new photograph -------------------------------------------
-     Resized here, in the browser, before it is stored or sent. A phone photo is
-     4000px and several megabytes; nobody bidding needs that, and on a Dhaka
-     mobile connection it would be the slowest thing on the page.
+     Resized here, in the browser, before it is sent. A phone photo is 4000px
+     and several megabytes; nobody bidding needs that, and on a Dhaka mobile
+     connection it would be the slowest thing on the page.
   -------------------------------------------------------------------------- */
 
   var MAX_EDGE = 1800;      // same as the catalogue's full-size images
@@ -116,7 +122,29 @@
     var ctx = canvas.getContext("2d");
     ctx.imageSmoothingQuality = "high";
     ctx.drawImage(source, 0, 0, cw, ch);
-    return { url: canvas.toDataURL("image/jpeg", JPEG_QUALITY), w: cw, h: ch };
+
+    return new Promise(function (resolve) {
+      var done = function (blob) {
+        resolve({
+          blob: blob,
+          url: URL.createObjectURL(blob),
+          bytes: blob.size,
+          w: cw,
+          h: ch
+        });
+      };
+      // toBlob is the one that gives something uploadable. Where it is missing,
+      // go the long way round through the data URL.
+      if (canvas.toBlob) {
+        canvas.toBlob(function (blob) { done(blob); }, "image/jpeg", JPEG_QUALITY);
+      } else {
+        var url = canvas.toDataURL("image/jpeg", JPEG_QUALITY);
+        var bin = atob(url.split(",")[1]);
+        var bytes = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        done(new Blob([bytes], { type: "image/jpeg" }));
+      }
+    });
   }
 
   function shrinkViaImage(file) {
@@ -125,7 +153,7 @@
       var url = URL.createObjectURL(file);
       img.onload = function () {
         URL.revokeObjectURL(url);
-        resolve(drawToJpeg(img, img.naturalWidth, img.naturalHeight));
+        drawToJpeg(img, img.naturalWidth, img.naturalHeight).then(resolve, reject);
       };
       img.onerror = function () {
         URL.revokeObjectURL(url);
@@ -160,9 +188,10 @@
         if (settled) { bmp.close(); return; }
         settled = true;
         clearTimeout(timer);
-        var out = drawToJpeg(bmp, bmp.width, bmp.height);
-        bmp.close();
-        resolve(out);
+        drawToJpeg(bmp, bmp.width, bmp.height).then(function (out) {
+          bmp.close();
+          resolve(out);
+        }, reject);
       }).catch(function () {
         clearTimeout(timer);
         fallback();
@@ -183,10 +212,10 @@
 
     shrink(file).then(function (out) {
       clearPicked();
+      pending = out;
       chosen = out.url;
-      var kb = Math.round((out.url.length * 3 / 4) / 1024);
-      f.uploadNote.textContent =
-        file.name + " — " + out.w + "×" + out.h + ", about " + kb + " KB after resizing.";
+      f.uploadNote.textContent = file.name + " — " + out.w + "×" + out.h +
+        ", about " + Math.round(out.bytes / 1024) + " KB after resizing.";
       say("");
       renderPreview();
     }).catch(function (err) {
@@ -242,9 +271,30 @@
     f.msg.className = "admin__msg" + (kind ? " is-" + kind : "");
   }
 
+  function busy(on) {
+    var btn = document.getElementById("publish");
+    if (btn) btn.disabled = on;
+  }
+
+  // A catalogue artwork already has a URL on this site. An uploaded photograph
+  // has to be put somewhere first, and that somewhere is the auction bucket.
+  function imageURL(db) {
+    if (!pending) return Promise.resolve(chosen);
+
+    var name = "lot-" + Date.now() + ".jpg";
+    return db.storage.from(BUCKET)
+      .upload(name, pending.blob, { contentType: "image/jpeg", upsert: false })
+      .then(function (r) {
+        if (r.error) throw new Error("the photograph would not upload — " + r.error.message);
+        return db.storage.from(BUCKET).getPublicUrl(name).data.publicUrl;
+      });
+  }
+
   function publish(e) {
     e.preventDefault();
 
+    var db = window.AUCTION_DB;
+    if (!db) { say("Not connected to the database — reload the page.", "error"); return; }
     if (!chosen) { say("Choose an artwork first.", "error"); return; }
 
     var start = Number(f.start.value);
@@ -256,95 +306,126 @@
     if (!(raise > 0)) { say("Set a lowest bid.", "error"); return; }
     if (!(closes > opens)) { say("The close has to be after the opening.", "error"); return; }
 
-    var auction = {
-      id: "preview-" + Date.now(),
-      title: f.title.value || "Untitled",
-      medium: f.medium.value,
-      size: f.size.value,
-      image_path: chosen,
-      start_price: start,
-      increment: raise,
-      status: closes > new Date() ? "live" : "closed",
-      starts_at: opens.toISOString(),
-      ends_at: closes.toISOString(),
-      scheduled_end_at: closes.toISOString()
-    };
+    busy(true);
+    say(pending ? "Uploading the photograph…" : "Publishing…");
 
-    try {
-      // A new lot starts with no bids — never inherit the last one's.
-      localStorage.setItem(STORE_KEY, JSON.stringify({ auction: auction, bids: [] }));
-    } catch (err) {
-      say(err && err.name === "QuotaExceededError"
-        ? "The preview store is full — this only limits the preview, not the real thing. Clear it by publishing a catalogue artwork instead."
-        : "This browser would not save the preview (" + (err && err.name) + ").", "error");
-      return;
-    }
+    imageURL(db).then(function (path) {
+      say("Publishing…");
+      return db.from("auctions").insert({
+        title: f.title.value || "Untitled",
+        medium: f.medium.value || null,
+        size: f.size.value || null,
+        image_path: path,
+        start_price: start,
+        increment: raise,
+        status: opens <= new Date() ? "live" : "scheduled",
+        starts_at: opens.toISOString(),
+        ends_at: closes.toISOString(),
+        scheduled_end_at: closes.toISOString()
+      }).select("id").single();
+    }).then(function (r) {
+      if (r.error) {
+        // The commonest refusal by far: signed in, but not as the owner.
+        throw new Error(/row-level security/i.test(r.error.message)
+          ? "the database would not accept it from this account. Sign in as nazm.anwr@gmail.com."
+          : r.error.message);
+      }
 
-    say("Published. Open the auction page to see it.", "done");
+      busy(false);
+      say("Published. It is on the auction page and the home page now.", "done");
 
-    var link = document.createElement("a");
-    link.href = "/auction.html";
-    link.textContent = "Go to the auction page →";
-    link.style.display = "inline-block";
-    link.style.marginTop = "0.5rem";
-    f.msg.appendChild(document.createElement("br"));
-    f.msg.appendChild(link);
+      var link = document.createElement("a");
+      link.href = "/auction.html";
+      link.textContent = "Go to the auction page →";
+      link.style.display = "inline-block";
+      link.style.marginTop = "0.5rem";
+      f.msg.appendChild(document.createElement("br"));
+      f.msg.appendChild(link);
+    }).catch(function (err) {
+      busy(false);
+      say("Not published — " + (err && err.message ? err.message : "something went wrong."), "error");
+    });
   }
 
   /* --- The gate --------------------------------------------------------------
-     On a static host the page itself cannot be hidden, so it is not the page
-     that is protected — it is the database. Signed out, this shows a sign-in
-     box and nothing else; signed in as anyone other than the owner, the
-     database refuses to create an auction anyway.
+     Signed out, this shows a sign-in box and nothing else. The link that comes
+     by email brings you back to this page already signed in, and it stays that
+     way on that device, so it is once per phone or iPad.
 
-     ?signedout=1 shows the sign-in screen while still in preview.
+     ?signedout=1 shows the sign-in screen even when already signed in, which is
+     how to check what it looks like.
   -------------------------------------------------------------------------- */
 
   function showGate(on) {
     var gate = document.getElementById("gate");
-    var flag = document.getElementById("preview-flag");
     var aside = document.querySelector(".admin__preview");
     if (gate) gate.hidden = !on;
     if (f.form) f.form.hidden = on;
     if (aside) aside.hidden = on;
-    if (flag) flag.hidden = on;
   }
 
-  var pretendSignedOut = /[?&]signedout=1/.test(location.search);
-
-  if (pretendSignedOut) {
-    showGate(true);
+  function wireGate() {
     var gform = document.getElementById("gate-form");
-    if (gform) {
-      gform.addEventListener("submit", function (e) {
-        e.preventDefault();
-        var m = document.getElementById("gate-msg");
+    var m = document.getElementById("gate-msg");
+    if (!gform) return;
+
+    gform.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var email = document.getElementById("gate-email").value.trim();
+      if (!email) return;
+
+      m.className = "admin__msg";
+      m.textContent = "Sending…";
+
+      window.AUCTION_SOURCE.signIn(email).then(function () {
         m.className = "admin__msg is-done";
-        m.textContent = "In the live version a sign-in link would be on its way to " +
-          (document.getElementById("gate-email").value || "your email") +
-          ". This is the preview, so nothing was sent.";
+        m.textContent = "Check " + email + " — the link signs you in on this device.";
+      }).catch(function (err) {
+        m.className = "admin__msg is-error";
+        m.textContent = "Could not send it: " + (err && err.message);
       });
-    }
-    return;     // nothing below matters while the gate is up
+    });
+  }
+
+  function start() {
+    buildPicker();
+
+    // Sensible defaults: opens now, closes in three days.
+    var now = new Date();
+    var later = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+    f.starts.value = toLocalInput(now);
+    f.ends.value = toLocalInput(later);
+
+    ["title", "medium", "size", "start", "raise", "starts", "ends"].forEach(function (k) {
+      f[k].addEventListener("input", renderPreview);
+    });
+
+    if (f.upload) f.upload.addEventListener("change", onUpload);
+    f.form.addEventListener("submit", publish);
+    renderPreview();
   }
 
   /* --- Go -------------------------------------------------------------------- */
 
-  buildPicker();
+  wireGate();
 
-  // Sensible defaults: opens now, closes in three days.
-  var now = new Date();
-  var later = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
-  f.starts.value = toLocalInput(now);
-  f.ends.value = toLocalInput(later);
+  if (!window.AUCTION_SOURCE) {
+    showGate(true);
+    var m = document.getElementById("gate-msg");
+    if (m) {
+      m.className = "admin__msg is-error";
+      m.textContent = "The database connection did not load, so signing in cannot work yet.";
+    }
+    return;
+  }
 
-  ["title", "medium", "size", "start", "raise", "starts", "ends"].forEach(function (k) {
-    f[k].addEventListener("input", renderPreview);
+  var forceOut = /[?&]signedout=1/.test(location.search);
+
+  window.AUCTION_SOURCE.session().then(function (session) {
+    if (forceOut || !session) { showGate(true); return; }
+    showGate(false);
+    start();
+  }).catch(function () {
+    showGate(true);
   });
-
-  if (f.upload) f.upload.addEventListener("change", onUpload);
-
-  f.form.addEventListener("submit", publish);
-
-  renderPreview();
 })();

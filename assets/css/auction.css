@@ -23,6 +23,10 @@
   align-items: start;
 }
 
+/* display: grid beats the browser's own [hidden] rule, so without this the
+   empty lot shows its skeleton underneath "No auction running just now". */
+.lot[hidden] { display: none; }
+
 @media (max-width: 54rem) {
   .lot { grid-template-columns: minmax(0, 1fr); }
 }
@@ -415,3 +419,70 @@
 }
 
 .install-note[hidden] { display: none; }
+
+/* --- Signing up to bid --------------------------------------------------------
+   Stands where the bid buttons stand, rather than below them, because it is the
+   thing to do first — someone who has not signed up should not be looking at
+   buttons they cannot use.
+----------------------------------------------------------------------------- */
+
+.join {
+  margin-top: 1.6rem;
+  padding: 1.1rem 1.1rem 1.2rem;
+  border: 1px solid var(--rule);
+}
+
+.join[hidden] { display: none; }
+
+.join__note {
+  margin: 0.5rem 0 1.1rem;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.join .field {
+  display: block;
+  margin-bottom: 0.9rem;
+}
+
+.join .field[hidden] { display: none; }
+
+.join .field__label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.join .field input,
+.join .field textarea {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  font: inherit;
+  font-size: 1rem;              /* under 16px makes iOS zoom on focus */
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.join .field input { min-height: 48px; padding-top: 0; padding-bottom: 0; }
+
+.join .field textarea { resize: vertical; }
+
+.join .field input::placeholder,
+.join .field textarea::placeholder { color: var(--ink-faint); }
+
+.join .field input:focus-visible,
+.join .field textarea:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.join .btn { width: 100%; margin-top: 0.3rem; }

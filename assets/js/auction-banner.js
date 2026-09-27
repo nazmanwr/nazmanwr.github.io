@@ -124,6 +124,7 @@
   function refresh() {
     source.load().then(function (data) {
       if (data.server_time) state.skew = new Date(data.server_time) - Date.now();
+      window.AUCTION_CURRENT_ID = data.auction ? data.auction.id : null;
       state.auction = data.auction;
       state.bids = data.bids || [];
 
