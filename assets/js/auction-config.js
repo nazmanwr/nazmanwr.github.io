@@ -102,6 +102,32 @@ window.AUCTION_CONFIG = {
       });
   }
 
+  /* --- Sign-in errors worth explaining --------------------------------------
+     The one that matters is the sending limit. Left as it comes back it reads
+     like the site is broken, when in fact the email never left — so say so,
+     and say what to do instead, because someone standing in front of an
+     auction that is running will not wait quietly.
+  -------------------------------------------------------------------------- */
+
+  function readable(error) {
+    var msg = (error && error.message) || "";
+
+    // "For security purposes, you can only request this after 47 seconds."
+    var wait = msg.match(/after (\d+) seconds/i);
+    if (wait) {
+      return "Give it " + wait[1] + " seconds and ask again — one has just " +
+             "gone out to this address.";
+    }
+
+    if (/rate limit/i.test(msg) || (error && error.status === 429)) {
+      return "Too many sign-in emails have been sent in the last hour, so " +
+             "this one could not go out. Try again a little later, or ring " +
+             "01557454040 and your bid can be placed for you.";
+    }
+
+    return msg || "That did not work.";
+  }
+
   /* --- Who is bidding --------------------------------------------------------
      The bidders table holds a phone number and a home address, so it is fenced
      off by row-level rules: a bidder may read and write exactly one row, their
@@ -208,7 +234,7 @@ window.AUCTION_CONFIG = {
         email: email,
         options: { emailRedirectTo: location.origin + location.pathname }
       }).then(function (r) {
-        if (r.error) throw new Error(r.error.message);
+        if (r.error) throw new Error(readable(r.error));
         return true;
       });
     },
