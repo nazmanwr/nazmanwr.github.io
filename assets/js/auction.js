@@ -35,6 +35,8 @@
     time: document.getElementById("clock-time"),
     ends: document.getElementById("clock-ends"),
     clockName: document.getElementById("clock-name"),
+    leaderLabel: document.getElementById("leader-label"),
+    clockNote: document.getElementById("clock-note"),
     standing: document.getElementById("standing"),
     amount: document.getElementById("standing-amount"),
     who: document.getElementById("standing-who"),
@@ -104,8 +106,17 @@
       el.time.textContent = "—";
       el.clock.classList.remove("is-closing");
       el.ends.textContent = "Ended " + ends.toLocaleString();
+
+      // Past tense once it is over. "Highest bidder now" on a finished auction
+      // reads as though it is still running, and the rule about the last three
+      // hours has nothing left to govern.
+      if (el.leaderLabel) el.leaderLabel.textContent = "Winner";
+      if (el.clockNote) el.clockNote.hidden = true;
       return;
     }
+
+    if (el.leaderLabel) el.leaderLabel.textContent = "Highest bidder now";
+    if (el.clockNote) el.clockNote.hidden = false;
 
     var secs = Math.floor(left / 1000);
     var days = Math.floor(secs / 86400);
@@ -210,9 +221,11 @@
     el.custom.disabled = !open || state.busy;
 
     // Someone who has not signed up yet gets the sign-up form in place of the
-    // buttons, rather than buttons that turn out not to work.
+    // buttons, rather than buttons that turn out not to work. Once the auction
+    // is over, neither belongs on the page: a dead "Place a bid" box invites a
+    // tap that can only be refused.
     var ready = !!state.profile;
-    el.bidbox.hidden = !state.auction || (!ready && open);
+    el.bidbox.hidden = !state.auction || !open || (!ready && open);
     renderJoin(open && !ready);
   }
 
@@ -460,11 +473,14 @@
       who.textContent = b.display_name;
 
       // Say which of the two it is. "Leading" is the fact; "you" is the part
-      // that makes somebody act on it.
+      // that makes somebody act on it — and once it is over, leading is won.
       if (leading) {
+        var over = state.auction && state.auction.status === "closed";
         var tag = document.createElement("span");
         tag.className = "history__tag";
-        tag.textContent = b.is_you ? "You are leading" : "Leading";
+        tag.textContent = over
+          ? (b.is_you ? "You won" : "Won")
+          : (b.is_you ? "You are leading" : "Leading");
         who.appendChild(tag);
       } else if (b.is_you) {
         var mine = document.createElement("span");
