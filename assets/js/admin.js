@@ -438,13 +438,28 @@
     d.msg.after(box);
   }
 
+  // Shown only when something actually went wrong. A panel that stays hidden
+  // on failure is indistinguishable from one that was never deployed.
+  function dispatchTrouble(message) {
+    d.panel.hidden = false;
+    d.lot.textContent = "";
+    d.who.innerHTML = "";
+    d.zone.closest(".field-row").hidden = true;
+    d.note.closest(".field").hidden = true;
+    d.send.hidden = true;
+    dSay(message, "error");
+  }
+
   function loadDispatch(db) {
     return db.rpc("latest_dispatchable").then(function (r) {
-      if (r.error || !r.data) return;            // nothing closed yet
+      if (r.error) throw new Error(r.error.message);
+      if (!r.data) return;                       // nothing closed yet
       dispatchId = r.data;
       return db.rpc("dispatch_details", { p_auction_id: dispatchId });
     }).then(function (r) {
-      if (!r || r.error || !r.data || !r.data.length) return;
+      if (!r) return;
+      if (r.error) throw new Error(r.error.message);
+      if (!r.data || !r.data.length) return;
 
       var w = r.data[0];
       winningBid = Number(w.amount);
@@ -469,8 +484,12 @@
       }
 
       d.panel.hidden = false;
-    }).catch(function () {
-      // A failure here must never keep the "put one up" form off the screen.
+    }).catch(function (err) {
+      // Say so, but never let it keep the "put one up" form off the screen.
+      dispatchTrouble("Could not load the winner's details: " +
+                      (err && err.message ? err.message : "unknown error") +
+                      ". If this says the function is missing, steadfast.sql " +
+                      "has not been run yet.");
     });
   }
 

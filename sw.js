@@ -9,7 +9,7 @@
    a stale demo from cache.
    ========================================================================== */
 
-var VERSION = "v41";
+var VERSION = "v42";
 var SHELL   = "shell-" + VERSION;
 var RUNTIME = "runtime-" + VERSION;
 
@@ -146,6 +146,17 @@ self.addEventListener("fetch", function (event) {
 
   // The demo list changes often enough that freshness beats speed.
   if (url.pathname.endsWith("/data/demos.json")) {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  // Scripts and styles go network-first too. Under stale-while-revalidate a
+  // deploy always arrives one load late: the page's HTML is fresh, its
+  // JavaScript is the previous version, and the result looks exactly like a
+  // feature that failed to ship — which is how an hour went missing chasing
+  // a Steadfast button that was already live. The cache still answers when
+  // the network does not, so offline is unaffected.
+  if (url.pathname.slice(-3) === ".js" || url.pathname.slice(-4) === ".css") {
     event.respondWith(networkFirst(request));
     return;
   }
