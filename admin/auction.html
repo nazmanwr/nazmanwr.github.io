@@ -181,6 +181,25 @@
             <input id="f-ends" name="ends" type="datetime-local" required>
           </label>
         </div>
+
+        <label class="field">
+          <span class="field__label">Extension</span>
+          <span class="field__note">
+            A bid landing inside this much of the close pushes the close back by
+            the same amount. Three hours suits a lot running for days; an
+            evening auction wants far less, or it cannot end while anyone is
+            still awake.
+          </span>
+          <div class="field-pair">
+            <input id="f-ext" type="number" inputmode="numeric" min="1" step="1"
+                   required value="3">
+            <select id="f-ext-unit">
+              <option value="60" selected>hours</option>
+              <option value="1">minutes</option>
+            </select>
+          </div>
+        </label>
+
         <p class="field__note" id="duration-note"></p>
       </section>
 

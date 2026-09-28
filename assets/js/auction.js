@@ -21,7 +21,22 @@
   "use strict";
 
   var cfg = window.AUCTION_CONFIG || {};
-  var EXTENSION_HOURS = 3;
+
+  // The anti-sniping window is set per auction. Older rows, and any read that
+  // arrives before the column exists, fall back to the three hours it used to
+  // be fixed at.
+  function extensionMinutes() {
+    var m = state.auction && Number(state.auction.extension_minutes);
+    return isFinite(m) && m > 0 ? m : 180;
+  }
+
+  function windowLabel() {
+    var mins = extensionMinutes();
+    var h = Math.floor(mins / 60), m = mins % 60, parts = [];
+    if (h) parts.push(h + (h === 1 ? " hour" : " hours"));
+    if (m) parts.push(m + (m === 1 ? " minute" : " minutes"));
+    return parts.join(" ");
+  }
 
   var el = {
     empty: document.getElementById("no-lot"),
@@ -130,10 +145,18 @@
 
     // Inside the extension window the page changes character: this is the
     // stretch where a bid moves the deadline.
-    var closing = left <= EXTENSION_HOURS * 3600 * 1000;
+    var label = windowLabel();
+    var closing = left <= extensionMinutes() * 60 * 1000;
     el.clock.classList.toggle("is-closing", closing);
-    el.clockLabel.textContent = closing ? "Closing — every bid adds 3 hours" : "Time left";
+    el.clockLabel.textContent = closing ? "Closing — every bid adds " + label : "Time left";
     el.ends.textContent = "Scheduled to close " + ends.toLocaleString();
+
+    if (el.clockNote) {
+      el.clockNote.textContent =
+        "A bid in the last " + label + " pushes the close to " + label +
+        " after that bid. It ends only after " + label + " with no bidding, " +
+        "so it cannot be won in the final seconds.";
+    }
   }
 
   /* --- What may be bid next ------------------------------------------------- */

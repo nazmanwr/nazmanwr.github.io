@@ -30,6 +30,8 @@
     raise: document.getElementById("f-raise"),
     starts: document.getElementById("f-starts"),
     ends: document.getElementById("f-ends"),
+    ext: document.getElementById("f-ext"),
+    extUnit: document.getElementById("f-ext-unit"),
     msg: document.getElementById("admin-msg"),
     duration: document.getElementById("duration-note"),
     upload: document.getElementById("f-upload"),
@@ -248,6 +250,22 @@
     renderDuration();
   }
 
+  // The extension is stored in minutes whichever unit it was typed in, so the
+  // database has one number to reason about.
+  function extensionMinutes() {
+    var n = Number(f.ext && f.ext.value);
+    var unit = Number(f.extUnit && f.extUnit.value) || 60;
+    if (!isFinite(n) || n <= 0) return 0;
+    return Math.round(n * unit);
+  }
+
+  function windowLabel(mins) {
+    var h = Math.floor(mins / 60), m = mins % 60, parts = [];
+    if (h) parts.push(h + (h === 1 ? " hour" : " hours"));
+    if (m) parts.push(m + (m === 1 ? " minute" : " minutes"));
+    return parts.join(" ");
+  }
+
   function renderDuration() {
     if (!f.starts.value || !f.ends.value) { f.duration.textContent = ""; return; }
     var a = new Date(f.starts.value), b = new Date(f.ends.value);
@@ -258,10 +276,13 @@
     }
     var days = Math.floor(mins / 1440);
     var hours = Math.floor((mins % 1440) / 60);
+    var ext = extensionMinutes();
+
     f.duration.textContent = "Runs for " +
       (days ? days + (days === 1 ? " day " : " days ") : "") +
       (hours ? hours + (hours === 1 ? " hour" : " hours") : "") +
-      " before any extension.";
+      " before any extension" +
+      (ext ? ", then " + windowLabel(ext) + " more for every late bid." : ".");
   }
 
   /* --- Publishing ------------------------------------------------------------ */
@@ -306,6 +327,12 @@
     if (!(raise > 0)) { say("Set a lowest bid.", "error"); return; }
     if (!(closes > opens)) { say("The close has to be after the opening.", "error"); return; }
 
+    var ext = extensionMinutes();
+    if (!(ext >= 1 && ext <= 1440)) {
+      say("The extension has to be between one minute and one day.", "error");
+      return;
+    }
+
     busy(true);
     say(pending ? "Uploading the photograph…" : "Publishing…");
 
@@ -318,6 +345,7 @@
         image_path: path,
         start_price: start,
         increment: raise,
+        extension_minutes: ext,
         status: opens <= new Date() ? "live" : "scheduled",
         starts_at: opens.toISOString(),
         ends_at: closes.toISOString(),
@@ -558,7 +586,7 @@
     f.starts.value = toLocalInput(now);
     f.ends.value = toLocalInput(later);
 
-    ["title", "medium", "size", "start", "raise", "starts", "ends"].forEach(function (k) {
+    ["title", "medium", "size", "start", "raise", "starts", "ends", "ext", "extUnit"].forEach(function (k) {
       f[k].addEventListener("input", renderPreview);
     });
 

@@ -85,10 +85,12 @@
               <p class="clock__name" id="clock-name">—</p>
             </div>
           </div>
+          <!-- Replaced as soon as the lot loads, with its own window. The
+               placeholder names no duration, so a slow load cannot flash the
+               wrong number of hours at someone deciding what to bid. -->
           <p class="clock__note" id="clock-note">
-            A bid in the last three hours pushes the close three hours past
-            that bid. The auction ends when three hours pass with nobody
-            bidding, so it cannot be won in the final seconds.
+            A late bid pushes the close back, so this cannot be won in the
+            final seconds.
           </p>
           <p class="clock__ends" id="clock-ends"></p>
         </div>

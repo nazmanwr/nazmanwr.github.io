@@ -341,3 +341,10 @@
 }
 
 .tracking strong { font-variant-numeric: tabular-nums; }
+
+/* A number and its unit are one answer, so they sit on one line. */
+.field-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(7rem, auto);
+  gap: 0 0.6rem;
+}

@@ -44,7 +44,8 @@
       text: d > 0
         ? d + "d " + twoDigits(h) + ":" + twoDigits(m) + ":" + twoDigits(sec)
         : twoDigits(h) + ":" + twoDigits(m) + ":" + twoDigits(sec),
-      closing: ms <= 3 * 3600 * 1000
+      // Matches the auction's own extension window, which is set per lot.
+      closing: ms <= (Number(state.auction.extension_minutes) || 180) * 60 * 1000
     };
   }
 
