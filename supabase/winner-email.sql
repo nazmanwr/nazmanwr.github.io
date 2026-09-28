@@ -197,9 +197,17 @@ begin
     '%s'
     '<p style="font-size:26px;margin:22px 0 4px">%s</p>'
     '<p style="color:#6b6b6b;margin:0 0 24px">Your winning bid.</p>'
-    '<p>Thank you for bidding. I will call you on %s to arrange payment and '
-    'getting the work to you. If you would rather reach me first, my number '
-    'is <a href="tel:+8801557454040" style="color:#141414">01557454040</a>.</p>'
+    '<p>Congratulations! You have won this Original Calligraphy Artwork in the '
+    'Calligraphy Auction.</p>'
+    '<p>A delivery representative will contact you shortly to arrange the '
+    'delivery. Payment for the artwork will be collected via Cash on Delivery '
+    '(COD) upon delivery.</p>'
+    '<p><strong>Please note:</strong> The delivery charge is separate from the '
+    'artwork price and will be payable to the delivery representative upon '
+    'receiving the artwork. The delivery charge is BDT 100 within Dhaka and '
+    'BDT 200 outside Dhaka.</p>'
+    '<p>Thank you for participating in the Calligraphy Auction. Through your '
+    'participation, you have contributed to the Art and Culture of Bangladesh.</p>'
     '<p style="color:#6b6b6b;font-size:13px;margin-top:28px">Nazm Anwr · '
     '<a href="https://nazmanwr.com" style="color:#6b6b6b">nazmanwr.com</a></p>'
     '</div>',
@@ -210,8 +218,7 @@ begin
     case when v_spec is null then ''
          else format('<p style="color:#6b6b6b;margin:0">%s</p>', public.html_escape(v_spec))
     end,
-    public.taka(v_amount),
-    public.html_escape(v_phone)
+    public.taka(v_amount)
   );
 
   v_req := public.send_email(v_email, 'You won — ' || v_auction.title, v_html);
