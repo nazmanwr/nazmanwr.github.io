@@ -57,9 +57,6 @@
     install: document.getElementById("install-note"),
     join: document.getElementById("join"),
     joinForm: document.getElementById("join-form"),
-    joinTitle: document.getElementById("join-title"),
-    joinNote: document.getElementById("join-note"),
-    joinGo: document.getElementById("join-go"),
     joinMsg: document.getElementById("join-msg"),
     jName: document.getElementById("j-name"),
     jPhone: document.getElementById("j-phone"),
@@ -67,8 +64,7 @@
     jDistrict: document.getElementById("j-district"),
     jThana: document.getElementById("j-thana"),
     jAddress: document.getElementById("j-address"),
-    jEmail: document.getElementById("j-email"),
-    jEmailField: document.getElementById("j-email-field")
+    jEmail: document.getElementById("j-email")
   };
 
   var state = {
@@ -241,27 +237,12 @@
     } catch (err) { return null; }
   }
 
+  // One form, one wording, whoever is looking at it. The signed-in-but-no-
+  // details case is handled in onJoin without showing a second version of the
+  // panel — see there for why it cannot simply be dropped.
   function renderJoin(show) {
     if (!el.join) return;
     el.join.hidden = !show;
-    if (!show) return;
-
-    // Already signed in, just no details yet: the email step is done, so ask
-    // for the rest and save it straight away.
-    if (state.signedIn) {
-      el.joinTitle.textContent = "One more thing before you bid";
-      el.joinNote.textContent =
-        "You are signed in. This is where the artwork goes if you win, and " +
-        "only you can see it.";
-      el.joinGo.textContent = "Save and start bidding";
-      el.jEmailField.hidden = true;
-      el.jEmail.required = false;
-    } else {
-      el.joinTitle.textContent = "Sign up to bid";
-      el.joinGo.textContent = "Send me a sign-in link";
-      el.jEmailField.hidden = false;
-      el.jEmail.required = true;
-    }
   }
 
   function joinSay(text, isError) {
@@ -345,9 +326,14 @@
       return;
     }
 
-    if (state.signedIn) { saveDetails(d); return; }
-
     if (!d.email) { joinSay("An email address is needed for the link.", true); return; }
+
+    // Signed in already, but with no details saved — which happens when the
+    // form is filled in one browser and the emailed link is opened in another,
+    // as it is whenever Gmail opens the link inside its own app. Sending a
+    // second link would only repeat that, so save what they have typed and let
+    // them bid. Nothing about the panel looks different to them.
+    if (state.signedIn) { saveDetails(d); return; }
 
     joinSay("Sending…");
     stash(d);
