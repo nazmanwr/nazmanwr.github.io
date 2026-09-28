@@ -268,3 +268,76 @@
 }
 
 .gate__form .btn { width: 100%; }
+
+/* --- Handing the parcel over ------------------------------------------------
+   Sits above the "put one up" form, because after an auction closes this is
+   the thing waiting to be done, and it only appears when there is one to do.
+--------------------------------------------------------------------------- */
+
+.dispatch {
+  grid-column: 1 / -1;
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+  padding: clamp(1.1rem, 2.5vw, 1.6rem);
+  border: 1px solid var(--ink);
+}
+
+.dispatch[hidden] { display: none; }
+
+.dispatch__who {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.3rem 1.25rem;
+  margin: 1rem 0 1.5rem;
+  font-size: 0.875rem;
+}
+
+.dispatch__who dt {
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  align-self: center;
+}
+
+.dispatch__who dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.dispatch__who dd.is-missing { color: var(--sold); }
+
+/* The select has to be dressed by hand once appearance is stripped, or it
+   arrives as a grey system box beside the square inputs. */
+.field select {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 2rem 0 0.9rem;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ink) 50%),
+    linear-gradient(135deg, var(--ink) 50%, transparent 50%);
+  background-position:
+    calc(100% - 1.05rem) calc(50% + 2px),
+    calc(100% - 0.75rem) calc(50% + 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.field select:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+.tracking {
+  margin-top: 0.75rem;
+  padding: 0.8rem 0.9rem;
+  background: var(--tile);
+  border-left: 2px solid var(--ink);
+  font-size: 0.875rem;
+}
+
+.tracking strong { font-variant-numeric: tabular-nums; }

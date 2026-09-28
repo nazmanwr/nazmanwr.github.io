@@ -58,6 +58,42 @@
       <p class="admin__msg" id="gate-msg"></p>
     </section>
 
+    <!-- The last closed auction, waiting to be handed to the courier. Hidden
+         when there is nothing to send. -->
+    <section class="dispatch" id="dispatch" hidden>
+      <h2 class="step__title">Send the winner's parcel</h2>
+      <p class="step__hint" id="d-lot"></p>
+
+      <dl class="dispatch__who" id="d-who"></dl>
+
+      <div class="field-row">
+        <label class="field">
+          <span class="field__label">Delivery area</span>
+          <span class="field__note">Sets the charge added to the bid.</span>
+          <select id="d-zone">
+            <option value="100">Inside Dhaka — BDT 100</option>
+            <option value="200">Outside Dhaka — BDT 200</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field__label">Collect on delivery</span>
+          <span class="field__note">The winning bid plus that charge.</span>
+          <input id="d-cod" type="number" inputmode="numeric" min="1" step="1">
+        </label>
+      </div>
+
+      <label class="field">
+        <span class="field__label">Note for the courier</span>
+        <input id="d-note" type="text" placeholder="Framed artwork — handle with care">
+      </label>
+
+      <div class="admin__actions">
+        <button class="btn btn--primary" type="button" id="d-send">Send to Steadfast</button>
+      </div>
+
+      <p class="admin__msg" id="d-msg"></p>
+    </section>
+
     <!-- Hidden until the sign-in check comes back, so a signed-out visitor
          never sees the form at all, not even for a moment. -->
     <form class="admin__form" id="auction-form" hidden>

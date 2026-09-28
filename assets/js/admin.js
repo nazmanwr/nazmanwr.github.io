@@ -387,7 +387,150 @@
     });
   }
 
+  /* --- Handing the parcel to Steadfast ---------------------------------------
+     Every field shown here is fetched from the database, not held in the page:
+     the winner's phone and address are unreadable to the publishable key by
+     design, so dispatch_details() hands over exactly this one winner's, and
+     only to the signed-in owner.
+
+     Nothing about the courier's keys passes through the browser either. The
+     page asks the database to make the call; the database holds the keys.
+  -------------------------------------------------------------------------- */
+
+  var d = {
+    panel: document.getElementById("dispatch"),
+    lot:   document.getElementById("d-lot"),
+    who:   document.getElementById("d-who"),
+    zone:  document.getElementById("d-zone"),
+    cod:   document.getElementById("d-cod"),
+    note:  document.getElementById("d-note"),
+    send:  document.getElementById("d-send"),
+    msg:   document.getElementById("d-msg")
+  };
+
+  var dispatchId = null;
+  var winningBid = 0;
+
+  function dSay(text, kind) {
+    d.msg.textContent = text || "";
+    d.msg.className = "admin__msg" + (kind ? " is-" + kind : "");
+  }
+
+  function pair(term, value, missing) {
+    var dt = document.createElement("dt");
+    dt.textContent = term;
+    var dd = document.createElement("dd");
+    dd.textContent = value || "not recorded — ask them";
+    if (!value || missing) dd.className = "is-missing";
+    d.who.append(dt, dd);
+  }
+
+  function recomputeCod() {
+    d.cod.value = String(winningBid + Number(d.zone.value || 0));
+  }
+
+  function showSent(consignment, tracking) {
+    d.send.hidden = true;
+    var box = document.createElement("p");
+    box.className = "tracking";
+    box.innerHTML = "Consignment <strong>" + (consignment || "—") +
+                    "</strong> · tracking <strong>" + (tracking || "—") + "</strong>";
+    d.msg.after(box);
+  }
+
+  function loadDispatch(db) {
+    return db.rpc("latest_dispatchable").then(function (r) {
+      if (r.error || !r.data) return;            // nothing closed yet
+      dispatchId = r.data;
+      return db.rpc("dispatch_details", { p_auction_id: dispatchId });
+    }).then(function (r) {
+      if (!r || r.error || !r.data || !r.data.length) return;
+
+      var w = r.data[0];
+      winningBid = Number(w.amount);
+
+      d.lot.textContent = w.title + (w.spec ? " — " + w.spec : "") +
+                          " · won at " + taka(w.amount);
+
+      d.who.innerHTML = "";
+      pair("Name", w.full_name);
+      pair("Phone", w.phone);
+      if (w.alt_phone) pair("Alt phone", w.alt_phone);
+      pair("Area", w.area);
+      pair("Address", w.address);
+
+      d.zone.value = w.inside_dhaka ? "100" : "200";
+      recomputeCod();
+      d.note.value = w.title + (w.spec ? " — " + w.spec : "");
+
+      if (w.already_sent) {
+        dSay("Already sent to Steadfast.", "done");
+        showSent(w.consignment_id, w.tracking_code);
+      }
+
+      d.panel.hidden = false;
+    }).catch(function () {
+      // A failure here must never keep the "put one up" form off the screen.
+    });
+  }
+
+  // pg_net answers after the transaction, so ask again rather than guess.
+  function pollResult(db, tries) {
+    return db.rpc("steadfast_result", { p_auction_id: dispatchId }).then(function (r) {
+      if (r.error) throw new Error(r.error.message);
+      var res = r.data && r.data[0];
+      if (!res) throw new Error("no answer");
+
+      if (res.state === "done") {
+        dSay("Sent. Steadfast have the parcel.", "done");
+        showSent(res.consignment_id, res.tracking_code);
+        return;
+      }
+      if (res.state === "failed") {
+        d.send.disabled = false;
+        dSay("Steadfast refused it: " + res.detail, "error");
+        return;
+      }
+      if (tries <= 0) {
+        dSay("Sent, but Steadfast have not answered yet. Reload in a moment " +
+             "to see the consignment number.", "done");
+        return;
+      }
+      return new Promise(function (ok) { setTimeout(ok, 1500); })
+        .then(function () { return pollResult(db, tries - 1); });
+    });
+  }
+
+  function sendDispatch() {
+    var db = window.AUCTION_DB;
+    if (!db || !dispatchId) return;
+
+    var cod = Number(d.cod.value);
+    if (!(cod > 0)) { dSay("Set the amount to collect.", "error"); return; }
+
+    d.send.disabled = true;
+    dSay("Sending…");
+
+    db.rpc("send_to_steadfast", {
+      p_auction_id: dispatchId,
+      p_cod: cod,
+      p_note: d.note.value || null
+    }).then(function (r) {
+      if (r.error) throw new Error(r.error.message);
+      return pollResult(db, 4);
+    }).catch(function (err) {
+      d.send.disabled = false;
+      dSay(err && err.message ? err.message : "That did not go through.", "error");
+    });
+  }
+
   function start() {
+    if (d.panel) {
+      d.zone.addEventListener("change", recomputeCod);
+      d.send.addEventListener("click", sendDispatch);
+      loadDispatch(window.AUCTION_DB);
+    }
+
     buildPicker();
 
     // Sensible defaults: opens now, closes in three days.
