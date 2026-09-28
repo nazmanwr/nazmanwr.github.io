@@ -63,6 +63,9 @@
     joinMsg: document.getElementById("join-msg"),
     jName: document.getElementById("j-name"),
     jPhone: document.getElementById("j-phone"),
+    jAltPhone: document.getElementById("j-alt-phone"),
+    jDistrict: document.getElementById("j-district"),
+    jThana: document.getElementById("j-thana"),
     jAddress: document.getElementById("j-address"),
     jEmail: document.getElementById("j-email"),
     jEmailField: document.getElementById("j-email-field")
@@ -266,10 +269,51 @@
     el.joinMsg.classList.toggle("is-error", !!isError);
   }
 
+  /* --- District and thana ----------------------------------------------------
+     Two dependent lists rather than a typed area, so what arrives is a name the
+     courier's own system recognises. Guessing the thana out of a free-text
+     address is where parcels go astray, and it is also what decides the
+     delivery charge.
+  -------------------------------------------------------------------------- */
+
+  function buildAreas() {
+    var areas = window.BD_AREAS;
+    if (!areas || !el.jDistrict) return;
+
+    Object.keys(areas).forEach(function (name) {
+      var o = document.createElement("option");
+      o.value = name;
+      o.textContent = name;
+      el.jDistrict.appendChild(o);
+    });
+
+    el.jDistrict.addEventListener("change", function () {
+      var list = areas[el.jDistrict.value] || [];
+
+      el.jThana.innerHTML = "";
+      var first = document.createElement("option");
+      first.value = "";
+      first.textContent = list.length ? "Choose…" : "Choose a district first";
+      el.jThana.appendChild(first);
+
+      list.forEach(function (t) {
+        var o = document.createElement("option");
+        o.value = t;
+        o.textContent = t;
+        el.jThana.appendChild(o);
+      });
+
+      el.jThana.disabled = !list.length;
+    });
+  }
+
   function details() {
     return {
       full_name: el.jName.value.trim(),
       phone: el.jPhone.value.trim(),
+      alt_phone: el.jAltPhone ? el.jAltPhone.value.trim() : "",
+      district: el.jDistrict ? el.jDistrict.value : "",
+      thana: el.jThana ? el.jThana.value : "",
       address: el.jAddress.value.trim(),
       email: el.jEmail.value.trim()
     };
@@ -293,6 +337,11 @@
 
     if (!d.full_name || !d.phone || !d.address) {
       joinSay("Name, phone and address are all needed.", true);
+      return;
+    }
+
+    if (!d.district || !d.thana) {
+      joinSay("Choose your district and area — the courier needs it.", true);
       return;
     }
 
@@ -613,6 +662,7 @@
     if (e.key === "Enter") { e.preventDefault(); bidFromCustom(); }
   });
 
+  buildAreas();
   if (el.joinForm) el.joinForm.addEventListener("submit", onJoin);
 
   maybeOfferInstall();

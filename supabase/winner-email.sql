@@ -139,10 +139,12 @@ as $fn$
 declare
   v_auction public.auctions%rowtype;
   v_amount  numeric;
-  v_name    text;
-  v_phone   text;
-  v_address text;
-  v_email   text;
+  v_name      text;
+  v_phone     text;
+  v_alt_phone text;
+  v_area      text;
+  v_address   text;
+  v_email     text;
   v_image   text;
   v_spec    text;
   v_html    text;
@@ -179,8 +181,11 @@ begin
   end if;
 
   select b.amount, d.full_name, d.phone, d.address,
-         coalesce(u.email, d.email)
-    into v_amount, v_name, v_phone, v_address, v_email
+         coalesce(u.email, d.email),
+         d.alt_phone,
+         nullif(concat_ws(', ', d.thana, d.district), '')
+    into v_amount, v_name, v_phone, v_address, v_email,
+         v_alt_phone, v_area
   from public.bids b
   join public.bidders d on d.id = b.bidder_id
   left join auth.users u on u.id = b.bidder_id
@@ -238,7 +243,9 @@ begin
     '<table style="border-collapse:collapse;font-size:15px">'
     '<tr><td style="padding:4px 18px 4px 0;color:#8a8a8a">Winner</td><td>%s</td></tr>'
     '<tr><td style="padding:4px 18px 4px 0;color:#8a8a8a">Phone</td><td><a href="tel:%s" style="color:#141414">%s</a></td></tr>'
+    '%s'
     '<tr><td style="padding:4px 18px 4px 0;color:#8a8a8a">Email</td><td><a href="mailto:%s" style="color:#141414">%s</a></td></tr>'
+    '<tr><td style="padding:4px 18px 4px 0;color:#8a8a8a">Area</td><td>%s</td></tr>'
     '<tr><td style="padding:4px 18px 4px 0;color:#8a8a8a;vertical-align:top">Address</td><td>%s</td></tr>'
     '<tr><td style="padding:4px 18px 4px 0;color:#8a8a8a">Bids</td><td>%s</td></tr>'
     '</table>'
@@ -248,7 +255,16 @@ begin
     public.taka(v_amount),
     public.html_escape(v_name),
     public.html_escape(v_phone), public.html_escape(v_phone),
+    case when v_alt_phone is null or v_alt_phone = '' then ''
+         else format('<tr><td style="padding:4px 18px 4px 0;color:#8a8a8a">Alt phone</td>'
+                     '<td><a href="tel:%s" style="color:#141414">%s</a></td></tr>',
+                     public.html_escape(v_alt_phone), public.html_escape(v_alt_phone))
+    end,
     public.html_escape(v_email), public.html_escape(v_email),
+    case when v_area is null or v_area = ''
+         then '<span style="color:#c0261c">not recorded — ask them</span>'
+         else public.html_escape(v_area)
+    end,
     replace(public.html_escape(v_address), E'\n', '<br>'),
     (select count(*) from public.bids where auction_id = p_auction_id)
   );

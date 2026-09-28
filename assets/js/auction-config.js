@@ -138,7 +138,7 @@ window.AUCTION_CONFIG = {
   function profileFor(user) {
     if (!user) return Promise.resolve(null);
     return db.from("bidders")
-      .select("id, full_name, phone, address, email")
+      .select("id, full_name, phone, alt_phone, district, thana, address, email")
       .eq("id", user.id)
       .maybeSingle()
       .then(function (r) {
@@ -194,9 +194,12 @@ window.AUCTION_CONFIG = {
           id: user.id,
           full_name: d.full_name,
           phone: d.phone,
+          alt_phone: d.alt_phone || null,
+          district: d.district || null,
+          thana: d.thana || null,
           address: d.address,
           email: d.email || user.email
-        }).select("id, full_name, phone, address, email").single();
+        }).select("id, full_name, phone, alt_phone, district, thana, address, email").single();
       }).then(function (r) {
         if (r.error) throw new Error(r.error.message);
         return r.data;

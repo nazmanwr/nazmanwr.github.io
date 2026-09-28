@@ -157,9 +157,32 @@
                      placeholder="01712345678">
             </label>
             <label class="field">
+              <span class="field__label">Alternative phone <span class="field__opt">optional</span></span>
+              <input id="j-alt-phone" type="tel" autocomplete="tel"
+                     placeholder="Someone who can take the call">
+            </label>
+
+            <!-- Area first, then the street: the courier needs the thana to
+                 route the parcel, and it decides the delivery charge. -->
+            <div class="field-pair">
+              <label class="field">
+                <span class="field__label">District</span>
+                <select id="j-district" required>
+                  <option value="">Choose…</option>
+                </select>
+              </label>
+              <label class="field">
+                <span class="field__label">Area (thana)</span>
+                <select id="j-thana" required disabled>
+                  <option value="">Choose a district first</option>
+                </select>
+              </label>
+            </div>
+
+            <label class="field">
               <span class="field__label">Home address</span>
               <textarea id="j-address" rows="2" autocomplete="street-address"
-                        required placeholder="House, road, area, city"></textarea>
+                        required placeholder="House, road, block"></textarea>
             </label>
             <label class="field" id="j-email-field">
               <span class="field__label">Email</span>
@@ -201,6 +224,7 @@
 </footer>
 
 <script src="/assets/vendor/supabase/supabase.js"></script>
+<script src="/assets/js/bd-areas.js"></script>
 <script src="/assets/js/auction-config.js"></script>
 <script src="/assets/js/auction.js" defer></script>
 
