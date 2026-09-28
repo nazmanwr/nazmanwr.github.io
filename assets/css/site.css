@@ -194,7 +194,7 @@ a:hover { color: var(--accent); }
   white-space: nowrap;
 }
 
-.nav { display: flex; gap: 0.25rem; align-items: center; }
+.nav { display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center; }
 
 /* 44px minimum touch target — Apple's HIG floor. Non-negotiable on iPad. */
 .nav a {

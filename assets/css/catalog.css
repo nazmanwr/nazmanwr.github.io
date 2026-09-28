@@ -145,13 +145,22 @@ a { color: inherit; }
   color: var(--ink-faint);
 }
 
+/* Six links need about 450px in one row, which is wider than a phone. Without
+   the wrap the nav pushes the whole page sideways and every screen gets a
+   horizontal scrollbar — on the auction page that means the countdown and the
+   leading bidder sit half off the edge. */
 .nav {
   display: flex;
-  gap: 1.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
   font-size: 0.75rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ink-soft);
+}
+
+@media (max-width: 30rem) {
+  .nav { gap: 0.45rem 1rem; letter-spacing: 0.12em; }
 }
 
 .nav a {
