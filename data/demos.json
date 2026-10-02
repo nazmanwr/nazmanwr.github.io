@@ -60,6 +60,14 @@
       "slug": "nazm-flute-designer-9729a6",
       "date": "2026-09-24",
       "notes": "Enter a scale and the tube's inner and outer diameter; it sizes and places the holes, draws a 1:1 working drawing and a 3D model. Exports SVG, CSV and OpenSCAD."
+    },
+    {
+      "title": "Tap metronome",
+      "client": "Nazm Anwr",
+      "type": "app",
+      "slug": "nazm-tap-metronome-5b1e7c",
+      "date": "2026-10-02",
+      "notes": "Tap to set the tempo; shows BPM and the beat length in milliseconds, plus the ms for every note value. Press Start for an audible click."
     }
   ]
 }

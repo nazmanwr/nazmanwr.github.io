@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tap Metronome — NAZM ANWR</title>
+
+<!-- Unlisted demo: keep it out of search results. -->
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<link rel="icon" href="/assets/img/icon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/assets/img/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="/assets/img/icon-180.png">
+<meta name="theme-color" content="#0f1115">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #181b22;
+    --line: #2a2f3a;
+    --text: #e8eaf0;
+    --muted: #8a90a0;
+    --accent: #4ade80;
+    --accent-2: #f59e0b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  main { width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: 16px; }
+  .top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .back { color: var(--muted); text-decoration: none; font-size: 14px; }
+  .back:hover { color: var(--text); }
+  h1 { font-size: 18px; font-weight: 600; margin: 0; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+
+  .readout {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    text-align: center;
+  }
+  .readout .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+  .readout .value { font-size: 44px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .readout .ms .value { color: var(--accent); }
+  .readout .unit { font-size: 16px; color: var(--muted); font-weight: 500; margin-left: 4px; }
+
+  .beats { display: flex; justify-content: center; gap: 10px; grid-column: 1 / -1; padding-top: 4px; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--line); transition: background .05s; }
+  .dot.on { background: var(--accent); }
+  .dot.on.first { background: var(--accent-2); }
+
+  #tap {
+    width: 100%;
+    aspect-ratio: 2 / 1;
+    max-height: 240px;
+    border: 2px solid var(--line);
+    border-radius: 20px;
+    background: var(--panel);
+    color: var(--text);
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    transition: transform .06s, border-color .06s;
+  }
+  #tap small { font-size: 13px; font-weight: 400; letter-spacing: 0; color: var(--muted); }
+  #tap.hit { transform: scale(.98); border-color: var(--accent); }
+
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  button.ctl {
+    background: var(--panel); color: var(--text);
+    border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 14px; font-size: 15px; cursor: pointer;
+  }
+  button.ctl:hover { border-color: var(--muted); }
+  #play { flex: 1; background: var(--accent); color: #0b0d10; border: none; font-weight: 700; }
+  #play.playing { background: var(--accent-2); }
+  input[type=number] {
+    width: 80px; background: var(--panel); color: var(--text);
+    border: 1px solid var(--line); border-radius: 10px; padding: 10px; font-size: 15px;
+  }
+  label.inline { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; font-variant-numeric: tabular-nums; }
+  th, td { padding: 8px 12px; text-align: right; border-bottom: 1px solid var(--line); font-size: 14px; }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--muted); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+  tr:last-child td { border-bottom: none; }
+  .hint { font-size: 12px; color: var(--muted); text-align: center; }
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <h1>Tap Metronome</h1>
+    <a class="back" href="/demos/">&#8592; Demos</a>
+  </div>
+
+  <section class="readout">
+    <div class="bpm">
+      <div class="label">Tempo</div>
+      <div class="value"><span id="bpm">120</span><span class="unit">BPM</span></div>
+    </div>
+    <div class="ms">
+      <div class="label">Beat length</div>
+      <div class="value"><span id="ms">500.0</span><span class="unit">ms</span></div>
+    </div>
+    <div class="beats" id="beats"></div>
+  </section>
+
+  <button id="tap" type="button">TAP<small id="tapInfo">Tap at least twice to set tempo</small></button>
+
+  <div class="controls">
+    <button class="ctl" id="minus" type="button" aria-label="Decrease tempo">−1</button>
+    <input type="number" id="bpmInput" min="20" max="300" step="1" value="120" aria-label="BPM">
+    <button class="ctl" id="plus" type="button" aria-label="Increase tempo">+1</button>
+    <button class="ctl" id="play" type="button">▶ Start</button>
+  </div>
+
+  <div class="controls">
+    <label class="inline">Beats/bar
+      <input type="number" id="beatsPerBar" min="1" max="12" value="4">
+    </label>
+    <label class="inline" style="flex:1">Volume
+      <input type="range" id="volume" min="0" max="1" step="0.01" value="0.7">
+    </label>
+  </div>
+
+  <table>
+    <thead><tr><th>Note</th><th>Straight</th><th>Dotted</th><th>Triplet</th></tr></thead>
+    <tbody id="noteTable"></tbody>
+  </table>
+
+  <p class="hint">Keys: <b>T</b> or <b>Space</b> = tap · <b>Enter</b> = start/stop · <b>↑/↓</b> = ±1 BPM</p>
+</main>
+
+<script>
+(() => {
+  const MIN_BPM = 20, MAX_BPM = 300;
+  const TAP_RESET_MS = 2000;   // gap that starts a new tap sequence
+  const TAP_WINDOW = 8;        // number of recent intervals to average
+
+  const $ = id => document.getElementById(id);
+  const els = {
+    bpm: $('bpm'), ms: $('ms'), tap: $('tap'), tapInfo: $('tapInfo'),
+    bpmInput: $('bpmInput'), play: $('play'), beats: $('beats'),
+    beatsPerBar: $('beatsPerBar'), volume: $('volume'), noteTable: $('noteTable'),
+  };
+
+  let bpm = 120;
+  let taps = [];
+
+  const NOTES = [
+    ['1/1 (whole)', 4],
+    ['1/2 (half)', 2],
+    ['1/4 (quarter)', 1],
+    ['1/8 (eighth)', 0.5],
+    ['1/16 (sixteenth)', 0.25],
+    ['1/32', 0.125],
+  ];
+
+  const fmt = v => v >= 1000 ? v.toFixed(0) : v.toFixed(1);
+
+  function setBpm(value, fromInput = false) {
+    bpm = Math.min(MAX_BPM, Math.max(MIN_BPM, value));
+    const beatMs = 60000 / bpm;
+    els.bpm.textContent = bpm.toFixed(bpm % 1 ? 1 : 0);
+    els.ms.textContent = beatMs.toFixed(1);
+    if (!fromInput) els.bpmInput.value = Math.round(bpm);
+    els.noteTable.innerHTML = NOTES.map(([name, beats]) => {
+      const straight = beatMs * beats;
+      return `<tr><td>${name}</td><td>${fmt(straight)} ms</td><td>${fmt(straight * 1.5)} ms</td><td>${fmt(straight * 2 / 3)} ms</td></tr>`;
+    }).join('');
+  }
+
+  // ---- Tap tempo ----
+  function tap() {
+    const now = performance.now();
+    if (taps.length && now - taps[taps.length - 1] > TAP_RESET_MS) taps = [];
+    taps.push(now);
+    if (taps.length > TAP_WINDOW + 1) taps.shift();
+
+    els.tap.classList.add('hit');
+    setTimeout(() => els.tap.classList.remove('hit'), 80);
+
+    if (taps.length < 2) {
+      els.tapInfo.textContent = 'Keep tapping…';
+      return;
+    }
+    const avgMs = (taps[taps.length - 1] - taps[0]) / (taps.length - 1);
+    setBpm(Math.round((60000 / avgMs) * 10) / 10);
+    els.tapInfo.textContent = `${taps.length} taps · avg interval ${avgMs.toFixed(1)} ms`;
+  }
+
+  // ---- Audio metronome (Web Audio lookahead scheduler) ----
+  let ctx = null, gain = null, playing = false, timer = null;
+  let nextNoteTime = 0, beatIndex = 0;
+  const LOOKAHEAD_MS = 25, SCHEDULE_AHEAD = 0.1;
+
+  function renderDots() {
+    const n = +els.beatsPerBar.value || 4;
+    els.beats.innerHTML = Array.from({ length: n }, (_, i) =>
+      `<span class="dot${i === 0 ? ' first' : ''}"></span>`).join('');
+  }
+
+  function click(time, accent) {
+    const osc = ctx.createOscillator();
+    const env = ctx.createGain();
+    osc.frequency.value = accent ? 1600 : 1000;
+    env.gain.setValueAtTime(1, time);
+    env.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
+    osc.connect(env).connect(gain);
+    osc.start(time);
+    osc.stop(time + 0.06);
+  }
+
+  function flash(index, time) {
+    const delay = Math.max(0, (time - ctx.currentTime) * 1000);
+    setTimeout(() => {
+      if (!playing) return;
+      [...els.beats.children].forEach((d, i) => d.classList.toggle('on', i === index));
+    }, delay);
+  }
+
+  function scheduler() {
+    const perBar = +els.beatsPerBar.value || 4;
+    while (nextNoteTime < ctx.currentTime + SCHEDULE_AHEAD) {
+      const idx = beatIndex % perBar;
+      click(nextNoteTime, idx === 0);
+      flash(idx, nextNoteTime);
+      nextNoteTime += 60 / bpm;
+      beatIndex++;
+    }
+  }
+
+  function start() {
+    if (!ctx) {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      gain = ctx.createGain();
+      gain.connect(ctx.destination);
+    }
+    ctx.resume();
+    gain.gain.value = +els.volume.value;
+    playing = true;
+    beatIndex = 0;
+    nextNoteTime = ctx.currentTime + 0.05;
+    timer = setInterval(scheduler, LOOKAHEAD_MS);
+    scheduler();
+    els.play.textContent = '■ Stop';
+    els.play.classList.add('playing');
+  }
+
+  function stop() {
+    playing = false;
+    clearInterval(timer);
+    [...els.beats.children].forEach(d => d.classList.remove('on'));
+    els.play.textContent = '▶ Start';
+    els.play.classList.remove('playing');
+  }
+
+  const toggle = () => (playing ? stop() : start());
+
+  // ---- Wiring ----
+  els.tap.addEventListener('pointerdown', e => { e.preventDefault(); tap(); });
+  els.play.addEventListener('click', toggle);
+  $('minus').addEventListener('click', () => setBpm(Math.round(bpm) - 1));
+  $('plus').addEventListener('click', () => setBpm(Math.round(bpm) + 1));
+  els.bpmInput.addEventListener('input', () => {
+    const v = parseFloat(els.bpmInput.value);
+    if (!isNaN(v) && v >= MIN_BPM) setBpm(v, true);
+  });
+  els.bpmInput.addEventListener('change', () => setBpm(parseFloat(els.bpmInput.value) || bpm));
+  els.beatsPerBar.addEventListener('input', () => { renderDots(); beatIndex = 0; });
+  els.volume.addEventListener('input', () => { if (gain) gain.gain.value = +els.volume.value; });
+
+  // Drop focus after a click so Space/Enter shortcuts don't also re-press the button
+  document.addEventListener('click', e => e.target.closest('button')?.blur());
+
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT') return;
+    if (e.code === 'Space' || e.key === 't' || e.key === 'T') { e.preventDefault(); if (!e.repeat) tap(); }
+    else if (e.key === 'Enter') { e.preventDefault(); toggle(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setBpm(Math.round(bpm) + 1); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); setBpm(Math.round(bpm) - 1); }
+  });
+
+  renderDots();
+  setBpm(120);
+})();
+</script>
+</body>
+</html>
