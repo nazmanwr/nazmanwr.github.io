@@ -68,6 +68,14 @@
       "slug": "nazm-tap-metronome-5b1e7c",
       "date": "2026-10-02",
       "notes": "Tap to set the tempo; shows BPM and the beat length in milliseconds, plus the ms for every note value. Press Start for an audible click."
+    },
+    {
+      "title": "Coffee counter",
+      "client": "Sayor Coffee",
+      "type": "app",
+      "slug": "sayor-coffee-bar-4bd5cf",
+      "date": "2026-10-03",
+      "notes": "Textured 3D model in SketchUp style, edges on. Drag to orbit, pinch to zoom. 7 MB: open it once on wifi before the meeting."
     }
   ]
 }
