@@ -76,6 +76,14 @@
       "slug": "sayor-coffee-bar-4bd5cf",
       "date": "2026-10-03",
       "notes": "Textured 3D model in SketchUp style, edges on. Drag to orbit, pinch to zoom. 7 MB: open it once on wifi before the meeting."
+    },
+    {
+      "title": "School",
+      "client": "Pallabi School",
+      "type": "app",
+      "slug": "pallabi-school-511280",
+      "date": "2026-10-04",
+      "notes": "Textured 3D model in SketchUp style: the full building and its floors laid out side by side. Drag to orbit, pinch to zoom. 3 MB, quick to open."
     }
   ]
 }

@@ -20,6 +20,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 const stage = document.getElementById('stage');
 const loader = document.getElementById('loader');
@@ -143,19 +144,98 @@ const EDGE_ANGLE = 25;
 
 const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x111111 });
 
-// Meshes share geometry (a stool repeated four times is one geometry, four
-// nodes), so the edge geometry is built once per geometry.
-const edgeCache = new Map();
+/* --- Merging ---------------------------------------------------------------
+   SketchUp exports every component instance as its own node: the school is
+   5,800 of them. Drawn one by one, plus a line object each for the edges, that
+   is over 11,000 draw calls a frame, which an iPad cannot keep up with. The
+   model never moves, so after loading it is baked down to one mesh per
+   material and a single object for all the edges — a dozen draw calls.
+-------------------------------------------------------------------------- */
 
-function addEdges(mesh) {
-  let edges = edgeCache.get(mesh.geometry);
-  if (!edges) {
-    edges = new THREE.EdgesGeometry(mesh.geometry, EDGE_ANGLE);
-    edgeCache.set(mesh.geometry, edges);
+const KEEP_ATTRIBUTES = ['position', 'normal', 'uv'];
+
+// One copy of a mesh's geometry, moved into world space and stripped to the
+// attributes every piece shares, so pieces with the same material can merge.
+function bakeGeometry(mesh) {
+  const geometry = mesh.geometry.clone();
+  Object.keys(geometry.attributes).forEach((name) => {
+    if (!KEEP_ATTRIBUTES.includes(name)) geometry.deleteAttribute(name);
+  });
+  if (!geometry.attributes.normal) geometry.computeVertexNormals();
+  geometry.clearGroups();
+  geometry.applyMatrix4(mesh.matrixWorld);
+
+  // A mirrored component (negative scale, common in SketchUp) comes out with
+  // its triangles wound backwards once the mirror is baked in. Faces are
+  // double-sided, but the shader decides which side is lit by winding, so
+  // those faces would shade dark. Reverse them back.
+  if (mesh.matrixWorld.determinant() < 0) {
+    const count = geometry.attributes.position.count;
+    const source = geometry.index ? geometry.index.array : null;
+    const order = new (count > 65535 ? Uint32Array : Uint16Array)(source ? source.length : count);
+    for (let i = 0; i < order.length; i += 3) {
+      order[i] = source ? source[i] : i;
+      order[i + 1] = source ? source[i + 2] : i + 2;
+      order[i + 2] = source ? source[i + 1] : i + 1;
+    }
+    geometry.setIndex(new THREE.BufferAttribute(order, 1));
   }
-  const lines = new THREE.LineSegments(edges, edgeMaterial);
-  lines.raycast = () => {};
-  mesh.add(lines);
+  return geometry;
+}
+
+function mergeModel(root) {
+  root.updateWorldMatrix(true, true);
+
+  const batches = new Map();
+  const edgePieces = [];
+  // Instances share geometry (four stools, one geometry), so edges are found
+  // once per geometry and then placed per instance.
+  const edgeCache = new Map();
+  const unmerged = [];
+
+  root.traverse((mesh) => {
+    if (!mesh.isMesh) return;
+    if (Array.isArray(mesh.material)) { unmerged.push(mesh); return; }
+
+    const geometry = bakeGeometry(mesh);
+    const key = mesh.material.uuid + (geometry.attributes.uv ? ':uv' : '') + (geometry.index ? ':i' : '');
+    if (!batches.has(key)) batches.set(key, { material: mesh.material, geometries: [] });
+    batches.get(key).geometries.push(geometry);
+
+    let edges = edgeCache.get(mesh.geometry);
+    if (!edges) {
+      edges = new THREE.EdgesGeometry(mesh.geometry, EDGE_ANGLE);
+      edgeCache.set(mesh.geometry, edges);
+    }
+    edgePieces.push(edges.clone().applyMatrix4(mesh.matrixWorld));
+  });
+
+  const merged = new THREE.Group();
+
+  batches.forEach(({ material, geometries }) => {
+    const geometry = mergeGeometries(geometries);
+    geometries.forEach((g) => g.dispose());
+    if (geometry) merged.add(new THREE.Mesh(geometry, material));
+  });
+
+  if (edgePieces.length) {
+    const lines = new THREE.LineSegments(mergeGeometries(edgePieces), edgeMaterial);
+    lines.raycast = () => {};
+    merged.add(lines);
+  }
+  edgePieces.forEach((g) => g.dispose());
+  edgeCache.forEach((g) => g.dispose());
+
+  // Anything with several materials on one mesh is left as it was, edges and
+  // all, rather than risk merging it wrongly.
+  unmerged.forEach((mesh) => {
+    const lines = new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry, EDGE_ANGLE), edgeMaterial);
+    mesh.add(lines);
+    mesh.matrixWorld.decompose(mesh.position, mesh.quaternion, mesh.scale);
+    merged.add(mesh);
+  });
+
+  return merged;
 }
 
 /* --- Framing ---------------------------------------------------------------
@@ -167,6 +247,7 @@ function addEdges(mesh) {
 let homeTarget = new THREE.Vector3();
 let homePosition = new THREE.Vector3();
 let homeBox = null;
+let homeDirection = null;
 
 function mainBounds(root) {
   const parts = [];
@@ -215,7 +296,10 @@ function mainBounds(root) {
   const limit = typical * 8;
 
   let kept = parts.filter((p, i) => distances[i] <= limit || typical === 0);
-  if (kept.length < parts.length * 0.8) kept = parts;
+  // Only a few stray faces are worth ignoring. When a whole block of parts sits
+  // apart (a model laid out as several buildings side by side), it is part of
+  // the subject and the camera has to take it in.
+  if (parts.length - kept.length > Math.max(3, parts.length * 0.01)) kept = parts;
 
   const box = new THREE.Box3();
   kept.forEach((p) => box.union(p.box));
@@ -234,6 +318,7 @@ function frame(object) {
   camera.far = radius * 100;
 
   homeBox = box.clone();
+  homeDirection = homeDirectionFor(size);
   homeTarget = centre.clone();
 
   controls.minDistance = radius * 0.05;
@@ -250,15 +335,23 @@ function frame(object) {
   resetView();
 }
 
-// SketchUp's opening view: a three-quarter angle from slightly above.
+// SketchUp's opening view: a three-quarter angle from slightly above. A long
+// layout (several buildings in a row) is turned to face its long side instead,
+// or the corner view looks straight down the row and the far end is a speck.
 const HOME_DIRECTION = new THREE.Vector3(-1, 0.55, 1.15).normalize();
 
-// How far back the camera must sit, looking along HOME_DIRECTION, for every
+function homeDirectionFor(size) {
+  if (size.x > size.z * 2) return new THREE.Vector3(-0.35, 0.6, 1).normalize();
+  if (size.z > size.x * 2) return new THREE.Vector3(-1, 0.6, 0.35).normalize();
+  return HOME_DIRECTION.clone();
+}
+
+// How far back the camera must sit, looking along homeDirection, for every
 // corner of the box to land on screen. Worked out for the current aspect, so a
 // portrait iPad (narrow horizontal field) backs off further than landscape.
 function fitDistance(box) {
   const centre = box.getCenter(new THREE.Vector3());
-  const forward = HOME_DIRECTION.clone().negate();
+  const forward = homeDirection.clone().negate();
   const right = new THREE.Vector3().crossVectors(forward, camera.up).normalize();
   const up = new THREE.Vector3().crossVectors(right, forward);
   const tanV = Math.tan((camera.fov * Math.PI) / 360);
@@ -279,12 +372,12 @@ function fitDistance(box) {
       Math.abs(corner.dot(up)) / tanV + nearer
     );
   }
-  return distance * 1.06;   // a little air round the edges
+  return distance * 1.1;   // a little air round the edges
 }
 
 function resetView() {
   if (homeBox) {
-    homePosition = homeTarget.clone().add(HOME_DIRECTION.clone().multiplyScalar(fitDistance(homeBox)));
+    homePosition = homeTarget.clone().add(homeDirection.clone().multiplyScalar(fitDistance(homeBox)));
   }
   camera.position.copy(homePosition);
   controls.target.copy(homeTarget);
@@ -316,11 +409,15 @@ new GLTFLoader().load(
         return converted.get(material);
       };
       mesh.material = Array.isArray(mesh.material) ? mesh.material.map(swap) : swap(mesh.material);
-      addEdges(mesh);
     });
 
-    scene.add(gltf.scene);
+    // Framing measures the parts one by one, so it runs before they merge.
     frame(gltf.scene);
+    scene.add(mergeModel(gltf.scene));
+    // The originals were copied into the merge; free their GPU-side copies.
+    gltf.scene.traverse((child) => {
+      if (child.isMesh) child.geometry.dispose();
+    });
     loader.hidden = true;
   },
   (event) => {
