@@ -145,11 +145,11 @@ td .note{font:600 15px var(--body);color:var(--ink)}
       <div class="row2">
         <div class="field">
           <label for="id">Inner Ø (mm)</label>
-          <input type="number" id="id" value="19" step="0.1" min="6">
+          <input type="number" id="id" value="19" step="1" min="6">
         </div>
         <div class="field">
           <label for="od">Outer Ø (mm)</label>
-          <input type="number" id="od" value="25" step="0.1" min="7">
+          <input type="number" id="od" value="25" step="1" min="7">
         </div>
       </div>
       <div class="field">
@@ -179,11 +179,11 @@ td .note{font:600 15px var(--body);color:var(--ink)}
       <div class="row2">
         <div class="field">
           <label for="dmin">Smallest hole</label>
-          <input type="number" id="dmin" value="5" step="0.5">
+          <input type="number" id="dmin" value="5" step="1">
         </div>
         <div class="field">
           <label for="dmax">Largest hole</label>
-          <input type="number" id="dmax" value="11" step="0.5">
+          <input type="number" id="dmax" value="11" step="1">
         </div>
       </div>
       <p class="hint">The largest hole is limited by what a fingertip can seal. About 11 mm suits most adult fingers.</p>
@@ -193,12 +193,12 @@ td .note{font:600 15px var(--body);color:var(--ink)}
         <div class="inner">
           <div class="field">
             <label for="emb">Embouchure hole Ø (mm)</label>
-            <input type="number" id="emb" value="10" step="0.5">
+            <input type="number" id="emb" value="10" step="1">
             <label class="inline"><input type="checkbox" id="embAuto" checked> Automatic (about 0.53 × bore)</label>
           </div>
           <div class="field">
             <label for="stop">Stopper face to embouchure centre (mm)</label>
-            <input type="number" id="stop" value="19" step="0.5">
+            <input type="number" id="stop" value="19" step="1">
             <label class="inline"><input type="checkbox" id="stopAuto" checked> Automatic (one bore diameter)</label>
           </div>
           <div class="field">
@@ -244,12 +244,12 @@ td .note{font:600 15px var(--body);color:var(--ink)}
               <option value="200">Zoom 2×</option>
               <option value="400">Zoom 4×</option>
             </select>
-            <button type="button" data-export="svg">Save SVG (1:1)</button>
-            <button type="button" data-copy="svg">Copy SVG</button>
+            <button type="button" data-export="dxf">Save DXF (1:1)</button>
+            <button type="button" data-copy="dxf">Copy DXF</button>
           </div>
         </div>
         <div class="sheetbox" id="sheet"></div>
-        <p class="hint">The SVG is drawn in real millimetres. Print it at 100% scale and tape it along the tube as a drilling template.</p>
+        <p class="hint">The DXF is drawn in real millimetres, with layers for the outline, holes, centre lines and dimensions. Plot it at 1:1 and tape it along the tube as a drilling template.</p>
       </section>
 
       <section class="sec">
@@ -290,8 +290,8 @@ window.startFluteApp = () => {
   window.startFluteApp.done = true;
 const $ = id => document.getElementById(id);
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
-const r05 = x => Math.round(x * 2) / 2;
-const f1 = x => x.toFixed(1);
+const rmm = x => Math.round(x); // whole-millimetre drill and stopper sizes
+const wn = x => String(Math.round(x)); // every number on the page is a whole number
 const sum = a => a.reduce((s, x) => s + x, 0);
 
 /* ---------- notes ---------- */
@@ -340,7 +340,7 @@ function design(p) {
 
   const wall = (OD - ID) / 2;
   const c = 331.3 * Math.sqrt(1 + p.T / 273.15) * 1000;          // mm/s
-  const De = p.embAuto ? r05(clamp(0.53 * ID, 5, 16)) : p.embD;
+  const De = p.embAuto ? rmm(clamp(0.53 * ID, 5, 16)) : p.embD;
   if (!(De > 2)) throw new Error('Embouchure hole diameter must be above 2 mm.');
   const Cemb = (ID / De) ** 2 * 10.84 * wall * De / (ID + 2 * wall); // embouchure correction
   const Cend = 0.30665 * ID;                                        // open foot end correction
@@ -369,7 +369,7 @@ function design(p) {
     const vals = p.manual.split(/[\s,;]+/).filter(Boolean).map(Number);
     if (vals.length !== N || vals.some(v => !(v > 0)))
       throw new Error(`Enter ${N} hole diameters in mm, one each for ${fing.slice(1).map(n => n.name).join(', ')}.`);
-    d = vals;
+    d = vals.map(v => Math.max(1, rmm(v)));
   } else {
     d = Array(N).fill(clamp(0.5 * ID, p.dmin, p.dmax));
     const target = s => d.map((di, i) => {
@@ -385,11 +385,15 @@ function design(p) {
     }
     const raw = target(solve(d));
     clamped = raw.map(x => x > p.dmax + 0.25 ? 'max' : x < p.dmin - 0.25 ? 'min' : '');
-    d = d.map(x => clamp(r05(x), p.dmin, p.dmax));
+    d = d.map(x => clamp(rmm(x), p.dmin, p.dmax));
   }
   const s = solve(d);
   if (!s.ok || s.X.some((x, i) => !(x < (i === 0 ? s.Xend : s.X[i - 1]))))
     throw new Error('A hole could not be placed: two neighbouring notes are too close for these hole sizes. Use smaller holes or a wider bore.');
+  // Snap positions to whole millimetres so every listed distance is an integer and they all add up.
+  s.Xend = Math.round(s.Xend); s.X = s.X.map(Math.round);
+  if (s.X.some((x, i) => !(x < (i === 0 ? s.Xend : s.X[i - 1]))))
+    throw new Error('Two holes land on the same millimetre. Use smaller holes or a wider bore.');
 
   const holes = d.map((di, i) => {
     const below = i === 0 ? s.Xend : s.X[i - 1];
@@ -407,25 +411,25 @@ function design(p) {
       const lo = holes[i - 1];
       if (h.gap < (h.d + lo.d) / 2 + 2) msgs.push(['err', `Holes for ${lo.note.name} and ${h.note.name} overlap or leave less than 2 mm of wood. Reduce their diameters.`]);
     }
-    if (h.d > 0.85 * ID) msgs.push(['warn', `The ${h.note.name} hole (Ø${f1(h.d)}) is more than 85% of the bore. It will weaken the tube and may sound airy.`]);
+    if (h.d > 0.85 * ID) msgs.push(['warn', `The ${h.note.name} hole (Ø${wn(h.d)}) is more than 85% of the bore. It will weaken the tube and may sound airy.`]);
   });
   const top = holes[N - 1];
   if (top.X - (De / 2 + top.d / 2) < 15) msgs.push(['warn', `The top hole sits within 15 mm of the embouchure hole. Use a higher first note or a narrower bore.`]);
   if (N === 6) {
     const rh = holes[0].X - holes[2].X, lh = holes[3].X - holes[5].X;
-    if (rh > 80) msgs.push(['warn', `The lower hand spans ${f1(rh)} mm across three holes, which is a wide stretch. You can drill a hole slightly off the line to reach it more easily.`]);
-    if (lh > 80) msgs.push(['warn', `The upper hand spans ${f1(lh)} mm across three holes, which is a wide stretch.`]);
+    if (rh > 80) msgs.push(['warn', `The lower hand spans ${wn(rh)} mm across three holes, which is a wide stretch. You can drill a hole slightly off the line to reach it more easily.`]);
+    if (lh > 80) msgs.push(['warn', `The upper hand spans ${wn(lh)} mm across three holes, which is a wide stretch.`]);
   }
   holes.forEach((h, i) => {
     if (i === 0 || (N === 6 && i === 3)) return;
-    if (h.gap > 42) msgs.push(['warn', `There are ${f1(h.gap)} mm between the ${holes[i - 1].note.name} and ${h.note.name} holes. Adjacent fingers may not reach.`]);
+    if (h.gap > 42) msgs.push(['warn', `There are ${wn(h.gap)} mm between the ${holes[i - 1].note.name} and ${h.note.name} holes. Adjacent fingers may not reach.`]);
   });
   if (p.sizing === 'auto') {
     const hitMax = holes.filter(h => h.clamp === 'max').map(h => h.note.name);
     if (hitMax.length) msgs.push(['warn', `${hitMax.join(', ')} wanted a hole larger than ${p.dmax} mm and was limited to it. These notes will be slightly weaker. A lower tone setting evens them out.`]);
   }
 
-  const stopDist = p.stopAuto ? r05(ID) : p.stopDist;
+  const stopDist = p.stopAuto ? rmm(ID) : p.stopDist;
   if (!(stopDist > 0)) throw new Error('Stopper distance must be above 0 mm.');
   const stopLen = Math.max(0, p.stopLen);
   const headLen = stopDist + stopLen;
@@ -440,154 +444,123 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 function titleOf(r) {
   return (r.p.name.trim() || `${r.N}-hole transverse flute in ${r.fing[0].name}`).toUpperCase();
 }
-function drawingSVG(r) {
-  const INK = '#1b2b44', SOFT = '#5d6c80', ACC = '#1e5aa8';
-  const FONT = "'Barlow Condensed','Arial Narrow',Arial,sans-serif";
-  const M = 12, x0 = M + 30;
-  const { Lt, OD, ID, De, headLen } = r;
-  const W = Math.max(420, Math.ceil(x0 + Lt + 28));
-  const sx = s => x0 + s;
-  const yP = M + 50, yS = yP + OD + 48;
-  const yB = yS + OD / 2 + 46;
-  const holesTop = r.holes.slice().reverse();
-  const rowsN = r.N + 3, rowH = 5.5;
-  const H = Math.ceil(yB + Math.max(rowsN * rowH + 4, 2 * OD + 30, 72) + M);
-  const o = [];
-  const T = (x, y, s, txt, a = {}) => o.push(`<text x="${f(x)}" y="${f(y)}" font-size="${s}"${a.anchor ? ` text-anchor="${a.anchor}"` : ''}${a.rot ? ` transform="rotate(${a.rot} ${f(x)} ${f(y)})"` : ''}${a.weight ? ` font-weight="${a.weight}"` : ''}${a.fill ? ` fill="${a.fill}"` : ''}${a.ls ? ` letter-spacing="${a.ls}"` : ''}>${esc(txt)}</text>`);
-  const Lx = (x1, y1, x2, y2, cls) => o.push(`<line x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}" class="${cls}"/>`);
-  function f(v) { return (+v).toFixed(2).replace(/\.?0+$/, ''); }
+// Layers shared by the on-screen SVG and the DXF. aci = AutoCAD colour index.
+const LAYERS = {
+  OUTLINE: { aci: 7, lt: 'CONTINUOUS', stroke: '#1b2b44', w: 0.5 },
+  HOLES: { aci: 7, lt: 'CONTINUOUS', stroke: '#1b2b44', w: 0.5 },
+  THIN: { aci: 7, lt: 'CONTINUOUS', stroke: '#1b2b44', w: 0.2 },
+  CENTER: { aci: 8, lt: 'CENTER', stroke: '#8a9099', w: 0.18, dash: '8 1.5 1.5 1.5' },
+  DIM: { aci: 7, lt: 'CONTINUOUS', stroke: '#1a1a1a', w: 0.18 },
+  CHAIN: { aci: 8, lt: 'CONTINUOUS', stroke: '#8a9099', w: 0.18 },
+};
+const TH = 3.5; // text height, mm
+// Geometry in real millimetres, y up: head end at x = 0, tube axis on y = 0.
+function drawingGeom(r) {
+  const g = [];
+  const L = (x1, y1, x2, y2, layer) => g.push({ t: 'line', x1, y1, x2, y2, layer });
+  const Tx = (x, y, s, layer, rot = 0, align = 'center') => g.push({ t: 'text', x, y, s, layer, rot, align, h: TH });
+  const tick = (x, y, layer) => { L(x - 0.9, y - 0.9, x + 0.9, y + 0.9, layer); L(x, y - 1.2, x, y + 1.2, layer); };
+  const dim = (xa, xb, y, layer) => {
+    L(xa - 1.2, y, xb + 1.2, y, layer); tick(xa, y, layer); tick(xb, y, layer);
+    Tx((xa + xb) / 2, y + 1, String(Math.round(xb - xa)), layer);
+  };
+  // Everything is placed at whole millimetres so the 1:1 template matches its integer labels.
+  const R = Math.round, Lt = R(r.Lt), OD = r.OD, top = OD / 2, bot = -OD / 2;
+  const feats = [{ s: R(r.headLen), d: R(r.De) }, ...r.holes.slice().reverse().map(h => ({ s: R(r.headLen + h.X), d: R(h.d) }))];
 
-  o.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}mm" height="${H}mm" viewBox="0 0 ${W} ${H}" font-family="${FONT}" fill="${INK}">`);
-  o.push(`<defs>
-<pattern id="fdHatch" width="1.4" height="1.4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="1.4" stroke="${INK}" stroke-width="0.16"/></pattern>
-<pattern id="fdCork" width="2.2" height="2.2" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><line x1="0" y1="0" x2="0" y2="2.2" stroke="${SOFT}" stroke-width="0.16"/><line x1="0" y1="1.1" x2="2.2" y2="1.1" stroke="${SOFT}" stroke-width="0.16"/></pattern>
-<marker id="fdArr" viewBox="0 0 6 4" refX="6" refY="2" markerWidth="3" markerHeight="2" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0L6,2L0,4z" fill="${INK}"/></marker>
-<style>.th{stroke:${INK};stroke-width:.5;fill:none}.tn{stroke:${INK};stroke-width:.2;fill:none}.cl{stroke:${SOFT};stroke-width:.18;stroke-dasharray:6 1.2 1 1.2;fill:none}.hd{stroke:${INK};stroke-width:.2;stroke-dasharray:1.6 .8;fill:none}.dm{stroke:${INK};stroke-width:.18;fill:none}.ex{stroke:${SOFT};stroke-width:.15;fill:none}</style>
-</defs>`);
-  o.push(`<rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>`);
-  o.push(`<rect x="${M / 2}" y="${M / 2}" width="${W - M}" height="${H - M}" class="th"/>`);
-
-  // features along the tube
-  const feats = [{ s: headLen, d: De, lab: 'EMB.', note: '' }, ...holesTop.map((h, k) => ({ s: headLen + h.X, d: h.d, lab: `H${k + 1}`, note: h.note.name }))];
-
-  /* ---- plan view ---- */
-  T(M + 6, yP, 3, 'PLAN', { rot: -90, anchor: 'middle', weight: 700, ls: 0.4 });
-  T(x0, M + 5, 3, 'HOLE CENTRES FROM EMBOUCHURE CENTRE (0)', { weight: 600, fill: SOFT, ls: 0.2 });
-  o.push(`<rect x="${sx(0)}" y="${yP - OD / 2}" width="${Lt}" height="${OD}" class="th"/>`);
-  Lx(sx(0) - 6, yP, sx(Lt) + 6, yP, 'cl');
-  Lx(sx(r.stopLen), yP - ID / 2, sx(r.stopLen), yP + ID / 2, 'hd');
-  Lx(sx(0), yP - ID / 2, sx(Lt), yP - ID / 2, 'hd');
-  Lx(sx(0), yP + ID / 2, sx(Lt), yP + ID / 2, 'hd');
+  // tube, stopper face, centre lines, holes
+  L(0, bot, Lt, bot, 'OUTLINE'); L(Lt, bot, Lt, top, 'OUTLINE'); L(Lt, top, 0, top, 'OUTLINE'); L(0, top, 0, bot, 'OUTLINE');
+  if (r.stopLen > 0) L(R(r.stopLen), bot, R(r.stopLen), top, 'THIN');
+  L(-8, 0, Lt + 8, 0, 'CENTER');
   feats.forEach(ft => {
-    o.push(`<circle cx="${f(sx(ft.s))}" cy="${yP}" r="${f(ft.d / 2)}" fill="#ffffff" class="th"/>`);
-    Lx(sx(ft.s), yP - ft.d / 2 - 1.5, sx(ft.s), yP + ft.d / 2 + 1.5, 'cl');
+    g.push({ t: 'circle', x: ft.s, y: 0, r: ft.d / 2, layer: 'HOLES' });
+    const k = ft.d / 2 + 1.5;
+    L(ft.s, -k, ft.s, k, 'CENTER');
   });
-  // ordinates from embouchure (above)
-  const ordUp = [{ s: 0, v: -headLen }, ...feats.map(ft => ({ s: ft.s, v: ft.s - headLen })), { s: Lt, v: r.Xend }];
-  ordUp.forEach(q => {
-    Lx(sx(q.s), yP - OD / 2 - 1.5, sx(q.s), yP - OD / 2 - 14, 'ex');
-    T(sx(q.s) + 1, yP - OD / 2 - 15, 3, q.v === 0 ? '0' : f1(q.v), { rot: -90, weight: q.v === 0 ? 700 : 500 });
-  });
-  // callouts (below)
+
+  // chain dimensions and overall length above
+  const yC = top + 20, yO = top + 38;
+  const st = [0, ...feats.map(ft => ft.s), Lt];
+  st.forEach((x, i) => L(x, top + 2, x, (i === 0 || i === st.length - 1 ? yO : yC) + 1.2, 'CHAIN'));
+  st.slice(1).forEach((x, i) => dim(st[i], x, yC, 'CHAIN'));
+  dim(0, Lt, yO, 'DIM');
+
+  // hole diameters on leaders, text running down the leader
+  const a = -Math.atan(2), u = [Math.cos(a), Math.sin(a)], n = [-u[1], u[0]];
   feats.forEach(ft => {
-    T(sx(ft.s), yP + OD / 2 + 5, 2.8, `Ø${f1(ft.d)}`, { anchor: 'middle', weight: 600 });
-    T(sx(ft.s), yP + OD / 2 + 8.6, 2.4, ft.lab + (ft.note ? ' · ' + ft.note : ''), { anchor: 'middle', fill: SOFT });
+    const x0 = ft.s + u[0] * ft.d / 2, y0 = u[1] * ft.d / 2;
+    const len = (y0 - (bot - 24)) / -u[1];
+    const x1 = x0 + u[0] * len, y1 = y0 + u[1] * len;
+    L(x0, y0, x1, y1, 'DIM');
+    const bx = x0 + u[0] * 2.5, by = y0 + u[1] * 2.5;
+    g.push({ t: 'solid', layer: 'DIM', pts: [[x0, y0], [bx + n[0] * 0.6, by + n[1] * 0.6], [bx - n[0] * 0.6, by - n[1] * 0.6]] });
+    Tx(x1 - u[0] + n[0] * 0.8, y1 - u[1] + n[1] * 0.8, 'Ø' + ft.d, 'DIM', a * 180 / Math.PI, 'right');
   });
-  T(sx(Lt) - 1, yP + OD / 2 + 5, 2.4, `FOOT · ${r.fing[0].name}`, { anchor: 'end', fill: SOFT });
 
-  /* ---- longitudinal section ---- */
-  T(M + 6, yS, 3, 'SECTION B–B', { rot: -90, anchor: 'middle', weight: 700, ls: 0.4 });
-  const yt = yS - OD / 2, yi = yS - ID / 2, yib = yS + ID / 2, yb = yS + OD / 2;
-  const cuts = feats.map(ft => [ft.s - ft.d / 2, ft.s + ft.d / 2]).sort((a, b) => a[0] - b[0]);
-  let cur = 0;
-  const segs = [];
-  cuts.forEach(([a, b]) => { segs.push([cur, a]); cur = b; });
-  segs.push([cur, Lt]);
-  segs.forEach(([a, b]) => { if (b > a) o.push(`<rect x="${f(sx(a))}" y="${f(yt)}" width="${f(b - a)}" height="${f(r.wall)}" fill="url(#fdHatch)" class="th"/>`); });
-  o.push(`<rect x="${sx(0)}" y="${f(yib)}" width="${Lt}" height="${f(r.wall)}" fill="url(#fdHatch)" class="th"/>`);
-  if (r.stopLen > 0) o.push(`<rect x="${sx(0)}" y="${f(yi)}" width="${f(r.stopLen)}" height="${f(ID)}" fill="url(#fdCork)" class="tn"/>`);
-  Lx(sx(0) - 6, yS, sx(Lt) + 6, yS, 'cl');
-  feats.forEach(ft => Lx(sx(ft.s), yt - 2, sx(ft.s), yi + 2, 'cl'));
-  if (r.stopLen > 0) T(sx(r.stopLen / 2), yS + 1, 2.4, 'CORK', { anchor: 'middle', rot: -90, fill: SOFT, weight: 600 });
-  // stopper distance
-  const yd = yt - 4;
-  Lx(sx(r.stopLen), yt - 1, sx(r.stopLen), yd - 1.5, 'ex');
-  o.push(`<line x1="${f(sx(r.stopLen))}" y1="${f(yd)}" x2="${f(sx(headLen))}" y2="${f(yd)}" class="dm" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/>`);
-  Lx(sx(headLen), yt - 1, sx(headLen), yd - 1.5, 'ex');
-  T(sx(headLen) + 2, yd + 1, 2.6, `${f1(r.stopDist)} STOPPER`, { weight: 600 });
-  // ordinates from foot (below)
-  T(x0, yb + 32 + 7, 3, 'HOLE CENTRES FROM FOOT END (0)', { weight: 600, fill: SOFT, ls: 0.2 });
-  const ordDn = [...feats.map(ft => ({ s: ft.s, v: Lt - ft.s })), { s: Lt, v: 0 }];
-  ordDn.forEach(q => {
-    Lx(sx(q.s), yb + 1.5, sx(q.s), yb + 14, 'ex');
-    T(sx(q.s) + 1, yb + 15, 3, q.v === 0 ? '0' : f1(q.v), { rot: -90, anchor: 'end', weight: q.v === 0 ? 700 : 500 });
+  // running dimensions from the head end below
+  st.slice(1).forEach((x, i) => dim(0, x, bot - 13 - i * 11, 'DIM'));
+  return g;
+}
+function geomBox(g, pad = 8) {
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  const grow = (x, y, m = 0) => { x0 = Math.min(x0, x - m); x1 = Math.max(x1, x + m); y0 = Math.min(y0, y - m); y1 = Math.max(y1, y + m); };
+  g.forEach(e => {
+    if (e.t === 'line') { grow(e.x1, e.y1); grow(e.x2, e.y2); }
+    else if (e.t === 'circle') grow(e.x, e.y, e.r);
+    else if (e.t === 'solid') e.pts.forEach(q => grow(q[0], q[1]));
+    else grow(e.x, e.y, e.h * 1.5);
   });
-  // overall length
-  const yo = yb + 30;
-  Lx(sx(0), yb + 1.5, sx(0), yo + 1.5, 'ex');
-  Lx(sx(Lt), yb + 15, sx(Lt), yo + 1.5, 'ex');
-  o.push(`<line x1="${sx(0)}" y1="${yo}" x2="${f(sx(Lt))}" y2="${yo}" class="dm" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/>`);
-  T(sx(Lt / 2), yo - 1.2, 3.2, `OVERALL LENGTH ${f1(Lt)}`, { anchor: 'middle', weight: 700 });
-
-  /* ---- bottom band ---- */
-  // end section A-A at 2:1
-  const R = OD, Ri = ID, ex = M + 8 + R, ey = yB + 6 + R;
-  o.push(`<path d="M${ex - R},${ey}a${R},${R} 0 1,0 ${2 * R},0a${R},${R} 0 1,0 ${-2 * R},0zM${ex - Ri},${ey}a${Ri},${Ri} 0 1,1 ${2 * Ri},0a${Ri},${Ri} 0 1,1 ${-2 * Ri},0z" fill="url(#fdHatch)" fill-rule="evenodd" class="th"/>`);
-  Lx(ex - R - 3, ey, ex + R + 3, ey, 'cl');
-  Lx(ex, ey - R - 3, ex, ey + R + 3, 'cl');
-  const a1 = -Math.PI / 4;
-  o.push(`<line x1="${f(ex + R * Math.cos(a1))}" y1="${f(ey + R * Math.sin(a1))}" x2="${f(ex + R * Math.cos(a1) + 8)}" y2="${f(ey + R * Math.sin(a1) - 8)}" class="dm" marker-start="url(#fdArr)"/>`);
-  T(ex + R * Math.cos(a1) + 9, ey + R * Math.sin(a1) - 8.5, 3, `Ø${f1(OD)} OD`, { weight: 600 });
-  const a2 = Math.PI / 5;
-  o.push(`<line x1="${f(ex + Ri * Math.cos(a2))}" y1="${f(ey + Ri * Math.sin(a2))}" x2="${f(ex + R + 6)}" y2="${f(ey + R * 0.75)}" class="dm" marker-start="url(#fdArr)"/>`);
-  T(ex + R + 7, ey + R * 0.75 + 1, 3, `Ø${f1(ID)} BORE`, { weight: 600 });
-  T(ex, ey + R + 7, 2.8, `SECTION A–A  (2:1)  WALL ${f1(r.wall)}`, { anchor: 'middle', weight: 700, ls: 0.2 });
-
-  // hole schedule
-  const cols = [['HOLE', 12], ['NOTE', 13], ['Hz', 15], ['Ø', 11], ['FROM EMB.', 19], ['FROM FOOT', 19], ['GAP BELOW', 18]];
-  const tw = sum(cols.map(c => c[1]));
-  const tx = Math.max(ex + R + 34, M + 8 + 2 * R + 40);
-  const rows = [['EMB.', '', '', f1(De), '0', f1(r.Xend), '']];
-  holesTop.forEach((h, k) => rows.push([`H${k + 1}`, h.note.name, h.note.f.toFixed(1), f1(h.d), f1(h.X), f1(h.fromFoot), f1(h.gap)]));
-  rows.push(['FOOT', r.fing[0].name, r.fing[0].f.toFixed(1), f1(ID), f1(r.Xend), '0', '']);
-  o.push(`<rect x="${tx}" y="${yB}" width="${tw}" height="${rowH * (rows.length + 1)}" class="th"/>`);
-  let cx = tx;
-  cols.forEach(([h, w], j) => {
-    T(cx + w / 2, yB + rowH - 1.6, 2.5, h, { anchor: 'middle', weight: 700 });
-    rows.forEach((row, i) => T(cx + w / 2, yB + rowH * (i + 2) - 1.6, 2.7, row[j], { anchor: 'middle' }));
-    cx += w;
-    if (j < cols.length - 1) Lx(cx, yB, cx, yB + rowH * (rows.length + 1), 'tn');
-  });
-  for (let i = 1; i <= rows.length; i++) Lx(tx, yB + rowH * i, tx + tw, yB + rowH * i, i === 1 ? 'th' : 'tn');
-  T(tx, yB + rowH * (rows.length + 1) + 4, 2.4, 'HOLE SCHEDULE · H1 IS THE TOP HOLE · GAP = TO NEXT HOLE OR END TOWARD FOOT', { fill: SOFT });
-
-  // notes + title block (right)
-  const bw = 124, bx = W - M - bw, by = H - M - 36;
-  const notesTxt = [
-    'NOTES',
-    '1. ALL DIMENSIONS IN MILLIMETRES. PRINT AT 100% FOR A 1:1 TEMPLATE.',
-    '2. HOLES DRILLED RADIALLY ON ONE LINE; POSITIONS TO HOLE CENTRES.',
-    '3. DRILL FINGER HOLES 1 mm UNDERSIZE, THEN ENLARGE TO TUNE.',
-    '   A LARGER HOLE RAISES THE PITCH.',
-    `4. TUNED FOR ${r.p.T} °C, A4 = ${r.p.A4} Hz, EQUAL TEMPERAMENT.`,
-  ];
-  if (r.overblown) notesTxt.push(`5. ${r.overblown.name} IS OVERBLOWN WITH ALL HOLES CLOSED.`);
-  notesTxt.forEach((t, i) => T(bx, by - 4 - (notesTxt.length - 1 - i) * 3.6, i === 0 ? 2.8 : 2.45, t, { weight: i === 0 ? 700 : 500 }));
-  o.push(`<rect x="${bx}" y="${by}" width="${bw}" height="36" class="th"/>`);
-  Lx(bx, by + 14, bx + bw, by + 14, 'tn');
-  Lx(bx, by + 25, bx + bw, by + 25, 'tn');
-  [31, 62, 93].forEach(dx => Lx(bx + dx, by + 14, bx + dx, by + 36, 'tn'));
-  T(bx + 3, by + 6.2, 4, titleOf(r), { weight: 700, ls: 0.2 });
-  T(bx + 3, by + 11.4, 2.7, 'SCALE: ' + r.fing.map(n => n.name).concat(r.overblown ? [r.overblown.name] : []).join('  '), { fill: SOFT, weight: 600 });
-  const cells = [['BORE', `Ø${f1(ID)}`], ['OUTSIDE', `Ø${f1(OD)}`], ['LENGTH', f1(Lt)], ['EMBOUCHURE', `Ø${f1(De)}`],
-    ['SCALE', '1:1'], ['UNITS', 'mm'], ['DATE', new Date().toISOString().slice(0, 10)], ['SHEET', '1 OF 1']];
-  cells.forEach(([k, v], i) => {
-    const cx2 = bx + (i % 4) * 31 + 2, cy2 = by + (i < 4 ? 14 : 25);
-    T(cx2, cy2 + 3.4, 2, k, { fill: SOFT, weight: 600, ls: 0.2 });
-    T(cx2, cy2 + 8.6, 3.4, v, { weight: 600 });
+  return { x0: x0 - pad, y0: y0 - pad, x1: x1 + pad, y1: y1 + pad };
+}
+function geomSVG(g) {
+  const b = geomBox(g), W = b.x1 - b.x0, H = b.y1 - b.y0;
+  const f = v => (+v).toFixed(2).replace(/\.?0+$/, '');
+  const X = x => f(x - b.x0), Y = y => f(b.y1 - y);
+  const st = l => { const s = LAYERS[l]; return `stroke="${s.stroke}" stroke-width="${s.w}"${s.dash ? ` stroke-dasharray="${s.dash}"` : ''}`; };
+  const anchor = { left: 'start', center: 'middle', right: 'end' };
+  const o = [`<svg xmlns="http://www.w3.org/2000/svg" width="${f(W)}mm" height="${f(H)}mm" viewBox="0 0 ${f(W)} ${f(H)}" font-family="'Arial Narrow',Arial,Helvetica,sans-serif">`,
+    `<rect width="${f(W)}" height="${f(H)}" fill="#ffffff"/>`];
+  g.forEach(e => {
+    if (e.t === 'line') o.push(`<line x1="${X(e.x1)}" y1="${Y(e.y1)}" x2="${X(e.x2)}" y2="${Y(e.y2)}" ${st(e.layer)}/>`);
+    else if (e.t === 'circle') o.push(`<circle cx="${X(e.x)}" cy="${Y(e.y)}" r="${f(e.r)}" fill="none" ${st(e.layer)}/>`);
+    else if (e.t === 'solid') o.push(`<path d="M${e.pts.map(q => X(q[0]) + ',' + Y(q[1])).join('L')}Z" fill="${LAYERS[e.layer].stroke}"/>`);
+    else o.push(`<text x="${X(e.x)}" y="${Y(e.y)}" font-size="${f(e.h / 0.72)}" fill="${LAYERS[e.layer].stroke}" text-anchor="${anchor[e.align]}"${e.rot ? ` transform="rotate(${f(-e.rot)} ${X(e.x)} ${Y(e.y)})"` : ''}>${esc(e.s)}</text>`);
   });
   o.push('</svg>');
-  return { svg: o.join('\n'), W, H };
+  return o.join('\n');
+}
+// DXF R12 (AC1009): opens in AutoCAD, LibreCAD, Fusion, Inkscape and most laser/CNC software.
+function geomDXF(g) {
+  const o = [];
+  const p = (...kv) => { for (let i = 0; i < kv.length; i += 2) o.push(String(kv[i]), String(kv[i + 1])); };
+  const n = v => (+v).toFixed(4).replace(/\.?0+$/, '');
+  const str = s => s.replace(/Ø/g, '%%c').replace(/°/g, '%%d').replace(/[^\x20-\x7e]/g, '?');
+  const b = geomBox(g, 0);
+  p(0, 'SECTION', 2, 'HEADER', 9, '$ACADVER', 1, 'AC1009',
+    9, '$EXTMIN', 10, n(b.x0), 20, n(b.y0), 9, '$EXTMAX', 10, n(b.x1), 20, n(b.y1), 9, '$LTSCALE', 40, 1, 0, 'ENDSEC');
+  p(0, 'SECTION', 2, 'TABLES', 0, 'TABLE', 2, 'LTYPE', 70, 2,
+    0, 'LTYPE', 2, 'CONTINUOUS', 70, 0, 3, 'Solid line', 72, 65, 73, 0, 40, 0,
+    0, 'LTYPE', 2, 'CENTER', 70, 0, 3, 'Center ____ _ ____', 72, 65, 73, 4, 40, 20, 49, 12, 49, -3, 49, 2, 49, -3, 0, 'ENDTAB');
+  const names = ['0', ...Object.keys(LAYERS)];
+  p(0, 'TABLE', 2, 'LAYER', 70, names.length);
+  names.forEach(k => p(0, 'LAYER', 2, k, 70, 0, 62, k === '0' ? 7 : LAYERS[k].aci, 6, k === '0' ? 'CONTINUOUS' : LAYERS[k].lt));
+  p(0, 'ENDTAB', 0, 'TABLE', 2, 'STYLE', 70, 1,
+    0, 'STYLE', 2, 'STANDARD', 70, 0, 40, 0, 41, 0.85, 50, 0, 71, 0, 42, TH, 3, 'arial.ttf', 4, '', 0, 'ENDTAB', 0, 'ENDSEC');
+  p(0, 'SECTION', 2, 'ENTITIES');
+  g.forEach(e => {
+    if (e.t === 'line') p(0, 'LINE', 8, e.layer, 10, n(e.x1), 20, n(e.y1), 30, 0, 11, n(e.x2), 21, n(e.y2), 31, 0);
+    else if (e.t === 'circle') p(0, 'CIRCLE', 8, e.layer, 10, n(e.x), 20, n(e.y), 30, 0, 40, n(e.r));
+    else if (e.t === 'solid') {
+      const [a, c, d] = e.pts;
+      p(0, 'SOLID', 8, e.layer, 10, n(a[0]), 20, n(a[1]), 30, 0, 11, n(c[0]), 21, n(c[1]), 31, 0, 12, n(d[0]), 22, n(d[1]), 32, 0, 13, n(d[0]), 23, n(d[1]), 33, 0);
+    } else {
+      p(0, 'TEXT', 8, e.layer, 10, n(e.x), 20, n(e.y), 30, 0, 40, n(e.h), 1, str(e.s), 50, n(e.rot), 7, 'STANDARD');
+      const j = { left: 0, center: 1, right: 2 }[e.align];
+      if (j) p(72, j, 11, n(e.x), 21, n(e.y), 31, 0);
+    }
+  });
+  p(0, 'ENDSEC', 0, 'EOF');
+  return o.join('\r\n') + '\r\n';
 }
 
 /* ---------- exports ---------- */
@@ -597,11 +570,11 @@ function scadText(r) {
   L.push(`// Generated by Six-Hole Flute Designer. Units: mm.`);
   L.push(`// Tube axis = Z. Head end at z = 0, foot at z = L. Holes are drilled along +Y.`);
   L.push(`$fn = 96;`);
-  L.push(`OD = ${f1(r.OD)};  ID = ${f1(r.ID)};  L = ${f1(r.Lt)};`);
-  L.push(`stopper_len = ${f1(r.stopLen)};`);
-  L.push(`embouchure = [${f1(r.headLen)}, ${f1(r.De)}];  // [z, diameter]`);
+  L.push(`OD = ${wn(r.OD)};  ID = ${wn(r.ID)};  L = ${wn(r.Lt)};`);
+  L.push(`stopper_len = ${wn(r.stopLen)};`);
+  L.push(`embouchure = [${wn(r.headLen)}, ${wn(r.De)}];  // [z, diameter]`);
   L.push(`holes = [  // [z, diameter]  note`);
-  r.holes.slice().reverse().forEach((h, k, a) => L.push(`  [${f1(r.headLen + h.X)}, ${f1(h.d)}]${k < a.length - 1 ? ',' : ' '}  // H${k + 1} ${h.note.name}`));
+  r.holes.slice().reverse().forEach((h, k, a) => L.push(`  [${wn(r.headLen + h.X)}, ${wn(h.d)}]${k < a.length - 1 ? ',' : ' '}  // H${k + 1} ${h.note.name}`));
   L.push(`];`);
   L.push(``);
   L.push(`module tube() {`);
@@ -621,9 +594,9 @@ function scadText(r) {
 }
 function csvText(r) {
   const L = ['feature,note,frequency_hz,diameter_mm,from_embouchure_mm,from_foot_mm,from_head_mm,gap_below_mm'];
-  L.push(`embouchure,,,${f1(r.De)},0,${f1(r.Xend)},${f1(r.headLen)},`);
-  r.holes.slice().reverse().forEach((h, k) => L.push(`H${k + 1},${h.note.name},${h.note.f.toFixed(2)},${f1(h.d)},${f1(h.X)},${f1(h.fromFoot)},${f1(r.headLen + h.X)},${f1(h.gap)}`));
-  L.push(`foot end,${r.fing[0].name},${r.fing[0].f.toFixed(2)},${f1(r.ID)},${f1(r.Xend)},0,${f1(r.Lt)},`);
+  L.push(`embouchure,,,${wn(r.De)},0,${wn(r.Xend)},${wn(r.headLen)},`);
+  r.holes.slice().reverse().forEach((h, k) => L.push(`H${k + 1},${h.note.name},${h.note.f.toFixed(2)},${wn(h.d)},${wn(h.X)},${wn(h.fromFoot)},${wn(r.headLen + h.X)},${wn(h.gap)}`));
+  L.push(`foot end,${r.fing[0].name},${r.fing[0].f.toFixed(2)},${wn(r.ID)},${wn(r.Xend)},0,${wn(r.Lt)},`);
   return L.join('\n');
 }
 
@@ -769,11 +742,11 @@ function playScale(r) {
 let last = null;
 const toast = msg => { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('show'), 1800); };
 function readParams() {
-  const n = id => parseFloat($(id).value);
+  const n = id => Math.round(parseFloat($(id).value)); // whole numbers only
   return {
-    notes: $('notes').value, startOct: +$('oct').value, A4: n('a4'),
+    notes: $('notes').value, startOct: +$('oct').value, A4: parseFloat($('a4').value),
     ID: n('id'), OD: n('od'), material: $('material').value,
-    sizing: $('szMan').checked ? 'manual' : 'auto', manual: $('manual').value, cut: n('cut'),
+    sizing: $('szMan').checked ? 'manual' : 'auto', manual: $('manual').value, cut: parseFloat($('cut').value),
     dmin: n('dmin'), dmax: n('dmax'),
     embAuto: $('embAuto').checked, embD: n('emb'),
     stopAuto: $('stopAuto').checked, stopDist: n('stop'), stopLen: n('stopLen'),
@@ -783,11 +756,11 @@ function readParams() {
 function renderSummary(r) {
   const item = (k, v, u) => `<div><dt>${k}</dt><dd>${v}${u ? ` <small>${u}</small>` : ''}</dd></div>`;
   $('summary').innerHTML = [
-    item('Tube length', f1(r.Lt), 'mm'),
-    item('Embouchure → foot', f1(r.Xend), 'mm'),
-    item('Embouchure hole', 'Ø' + f1(r.De), 'mm'),
-    item('Stopper face', f1(r.stopDist), 'mm above emb.'),
-    item('Wall', f1(r.wall), 'mm'),
+    item('Tube length', wn(r.Lt), 'mm'),
+    item('Embouchure → foot', wn(r.Xend), 'mm'),
+    item('Embouchure hole', 'Ø' + wn(r.De), 'mm'),
+    item('Stopper face', wn(r.stopDist), 'mm above emb.'),
+    item('Wall', wn(r.wall), 'mm'),
     item('Lowest note', r.fing[0].name, r.fing[0].f.toFixed(1) + ' Hz'),
   ].join('');
 }
@@ -796,11 +769,11 @@ function renderTable(r) {
   const dots = k => Array.from({ length: N }, (_, j) => j < k ? '●' : '○').join('');
   const rows = [];
   rows.push(`<tr><th>Hole</th><th>Note</th><th>Frequency</th><th>Hole Ø</th><th>From embouchure</th><th>From foot</th><th>Gap below</th><th>Fingering</th><th>Cutoff</th></tr>`);
-  rows.push(`<tr class="ref"><td>Embouchure</td><td></td><td></td><td>${f1(r.De)} mm</td><td>0.0</td><td>${f1(r.Xend)}</td><td></td><td></td><td></td></tr>`);
+  rows.push(`<tr class="ref"><td>Embouchure</td><td></td><td></td><td>${wn(r.De)} mm</td><td>0</td><td>${wn(r.Xend)}</td><td></td><td></td><td></td></tr>`);
   r.holes.slice().reverse().forEach((h, k) => {
-    rows.push(`<tr><td>H${k + 1}${k === 0 ? ' (top)' : ''}</td><td><span class="note">${h.note.name}</span></td><td>${h.note.f.toFixed(1)} Hz</td><td><b>${f1(h.d)} mm</b>${h.clamp ? ' *' : ''}</td><td>${f1(h.X)}</td><td>${f1(h.fromFoot)}</td><td>${f1(h.gap)}</td><td class="dots" aria-label="${k} closed">${dots(k)}</td><td>${Math.round(h.cutoff)} Hz</td></tr>`);
+    rows.push(`<tr><td>H${k + 1}${k === 0 ? ' (top)' : ''}</td><td><span class="note">${h.note.name}</span></td><td>${h.note.f.toFixed(1)} Hz</td><td><b>${wn(h.d)} mm</b>${h.clamp ? ' *' : ''}</td><td>${wn(h.X)}</td><td>${wn(h.fromFoot)}</td><td>${wn(h.gap)}</td><td class="dots" aria-label="${k} closed">${dots(k)}</td><td>${Math.round(h.cutoff)} Hz</td></tr>`);
   });
-  rows.push(`<tr><td>Foot end</td><td><span class="note">${r.fing[0].name}</span></td><td>${r.fing[0].f.toFixed(1)} Hz</td><td>${f1(r.ID)} bore</td><td>${f1(r.Xend)}</td><td>0.0</td><td></td><td class="dots">${dots(N)}</td><td></td></tr>`);
+  rows.push(`<tr><td>Foot end</td><td><span class="note">${r.fing[0].name}</span></td><td>${r.fing[0].f.toFixed(1)} Hz</td><td>${wn(r.ID)} bore</td><td>${wn(r.Xend)}</td><td>0</td><td></td><td class="dots">${dots(N)}</td><td></td></tr>`);
   if (r.overblown) rows.push(`<tr class="ref"><td>Overblown</td><td><span class="note">${r.overblown.name}</span></td><td>${r.overblown.f.toFixed(1)} Hz</td><td colspan="4">All holes closed, blow harder for the second register</td><td class="dots">${dots(N)}</td><td></td></tr>`);
   $('table').innerHTML = rows.join('');
 }
@@ -809,10 +782,10 @@ function renderMethod(r) {
 <p>The solver treats the flute as a tube open at both ends. The embouchure hole counts as an open end, so each note needs an acoustic length of <code>c / 2f</code>. Hole positions then follow the Benade/Nederveen tone-hole model, the same method used by the Flutomat calculator.</p>
 <ul>
 <li>Speed of sound at ${r.p.T} °C: <code>c = 331.3·√(1 + T/273.15) = ${(r.c / 1000).toFixed(1)} m/s</code></li>
-<li>Embouchure correction: <code>(B/Dₑ)²·10.84·w·Dₑ/(B + 2w) = ${f1(r.Cemb)} mm</code>, with bore B = ${f1(r.ID)}, wall w = ${f1(r.wall)}, embouchure Dₑ = ${f1(r.De)}</li>
-<li>Open foot end correction: <code>0.30665·B = ${f1(r.Cend)} mm</code>. Each closed hole adds <code>0.25·w·(d/B)²</code>.</li>
+<li>Embouchure correction: <code>(B/Dₑ)²·10.84·w·Dₑ/(B + 2w) = ${wn(r.Cemb)} mm</code>, with bore B = ${wn(r.ID)}, wall w = ${wn(r.wall)}, embouchure Dₑ = ${wn(r.De)}</li>
+<li>Open foot end correction: <code>0.30665·B = ${wn(r.Cend)} mm</code>. Each closed hole adds <code>0.25·w·(d/B)²</code>.</li>
 <li>Each open hole adds an extra length <code>C = ½·L·(√(1 + 4·tₑ·(B/d)²/L) − 1)</code>, where <code>tₑ = w + 0.75·d</code> and L is the distance to the next open hole below. The calculator solves this exactly for each hole position.</li>
-<li>Automatic hole size: every hole gets the same tone-hole cutoff <code>f꜀ = 0.11·c·(d/B)/√(s·tₑ) ≈ ${Math.round(r.fc)} Hz</code>, where 2s is the hole spacing. Sizes are rounded to 0.5 mm drill sizes, and the positions are recalculated for the rounded sizes.</li>
+<li>Automatic hole size: every hole gets the same tone-hole cutoff <code>f꜀ = 0.11·c·(d/B)/√(s·tₑ) ≈ ${Math.round(r.fc)} Hz</code>, where 2s is the hole spacing. Sizes are rounded to whole-millimetre drill sizes, and the positions are recalculated for the rounded sizes.</li>
 </ul>
 <p>Expect results within a few cents. Your embouchure, how far you cover the blow hole, and wall finish all shift the pitch. Drill each hole undersize, check it with a tuner, and open it up gradually. A bigger hole raises the pitch, and so does moving it toward the embouchure.</p>`;
 }
@@ -827,8 +800,8 @@ let drawing = null;
 function update(keepView = true) {
   const p = readParams();
   $('cutVal').textContent = (+p.cut).toFixed(1);
-  if (p.embAuto && isFinite(p.ID)) $('emb').value = r05(clamp(0.53 * p.ID, 5, 16));
-  if (p.stopAuto && isFinite(p.ID)) $('stop').value = r05(p.ID);
+  if (p.embAuto && isFinite(p.ID)) $('emb').value = rmm(clamp(0.53 * p.ID, 5, 16));
+  if (p.stopAuto && isFinite(p.ID)) $('stop').value = rmm(p.ID);
   $('emb').disabled = p.embAuto; $('stop').disabled = p.stopAuto;
   $('autoBox').hidden = p.sizing !== 'auto'; $('manBox').hidden = p.sizing !== 'manual';
   let r;
@@ -842,7 +815,8 @@ function update(keepView = true) {
   last = r;
   $('manHint').textContent = `One per hole, in note order: ${r.fing.slice(1).map(n => n.name).join(', ')}.`;
   renderMsgs(r); renderSummary(r); renderTable(r); renderMethod(r);
-  drawing = drawingSVG(r);
+  const g = drawingGeom(r);
+  drawing = { g, svg: geomSVG(g) };
   $('sheet').innerHTML = drawing.svg;
   applyZoom();
   build3D(r, keepView);
@@ -854,7 +828,7 @@ function applyZoom() {
 function payload(kind) {
   if (!last) return null;
   const base = titleOf(last).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  if (kind === 'svg') return { text: '<?xml version="1.0" encoding="UTF-8"?>\n' + drawing.svg, name: base + '-drawing.svg', type: 'image/svg+xml' };
+  if (kind === 'dxf') return { text: geomDXF(drawing.g), name: base + '-drawing.dxf', type: 'application/dxf' };
   if (kind === 'csv') return { text: csvText(last), name: base + '-holes.csv', type: 'text/csv' };
   return { text: scadText(last), name: base + '.scad', type: 'text/plain' };
 }
@@ -884,7 +858,7 @@ let t = null;
 $('form').addEventListener('input', () => { clearTimeout(t); t = setTimeout(update, 120); });
 $('form').addEventListener('submit', e => e.preventDefault());
 document.querySelectorAll('input[name=sizing]').forEach(el => el.addEventListener('change', () => {
-  if ($('szMan').checked && !$('manual').value.trim() && last) $('manual').value = last.holes.map(h => f1(h.d)).join(', ');
+  if ($('szMan').checked && !$('manual').value.trim() && last) $('manual').value = last.holes.map(h => wn(h.d)).join(', ');
   update();
 }));
 $('cutaway').addEventListener('change', () => last && build3D(last, true));
