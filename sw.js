@@ -13,6 +13,18 @@ var VERSION = "v47";
 var SHELL   = "shell-" + VERSION;
 var RUNTIME = "runtime-" + VERSION;
 
+/* The auction's alerts are delivered here, to this file, whether or not the
+   page is open — that is the whole point of them. These three values are the
+   public ones: the project it talks to, the key that identifies the project
+   without granting anything, and the public half of the signing key. They are
+   repeated from auction-config.js rather than imported because a service
+   worker is woken with no page attached and nothing else loaded. */
+var PUSH = {
+  url:   "https://ipwpeeoesesmerzsenoe.supabase.co",
+  key:   "sb_publishable_2-4Z1B4cnpx_UDnlYVQ03A_GulNLoHm",
+  vapid: "BG-siLK1pcarwMWURfHBEsY_oz7y3Ky-seI1oyzdD7yeufE-vbdQd966mB0EX1TriXFkeRfS1PrRJFEdNqagahY"
+};
+
 var PRECACHE = [
   "/",
   "/index.html",
@@ -33,6 +45,8 @@ var PRECACHE = [
   "/assets/js/auction.js",
   "/assets/js/auction-config.js",
   "/assets/js/auction-banner.js",
+  "/assets/js/auction-push.js",
+  "/auction.webmanifest",
   "/assets/vendor/supabase/supabase.js",
   "/assets/js/bd-areas.js",
   "/assets/js/model-viewer.js",
@@ -164,4 +178,109 @@ self.addEventListener("fetch", function (event) {
 
   // Everything else: serve instantly from cache, refresh in the background.
   event.respondWith(staleWhileRevalidate(request));
+});
+
+/* --- Alerts ----------------------------------------------------------------
+
+   A push arrives here even when nobody has the site open — the browser starts
+   this worker for the few milliseconds it takes to show the notification. That
+   is the difference between this and the email: it is read now, not whenever
+   somebody next opens their inbox.
+
+   The body was encrypted to this browser's own key before it left the
+   database, so the push service that carried it could not read what the
+   artwork is or what it is going for.
+--------------------------------------------------------------------------- */
+
+self.addEventListener("push", function (event) {
+  var data = {};
+  try { data = event.data ? event.data.json() : {}; } catch (e) { data = {}; }
+
+  // showNotification is not optional. A browser that is handed a push and
+  // shows nothing eventually has its permission taken away, so there is always
+  // something to show even if the payload arrived empty.
+  var title = data.title || "NAZM ANWR";
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: data.body || "Something has happened in the auction.",
+      icon: data.icon || "/assets/img/icon-192.png",
+      badge: "/assets/img/icon-192.png",
+      // One tag per lot, so a run of quick raises replaces the last alert
+      // rather than stacking five of them up the screen.
+      tag: data.tag || "auction",
+      renotify: true,
+      data: { url: data.url || "/auction.html" }
+    })
+  );
+});
+
+self.addEventListener("notificationclick", function (event) {
+  event.notification.close();
+
+  var target = (event.notification.data && event.notification.data.url) || "/auction.html";
+
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true })
+      .then(function (list) {
+        // Somebody watching the auction already should be brought back to the
+        // tab they were watching it in, not given a second one.
+        for (var i = 0; i < list.length; i++) {
+          if (list[i].url.indexOf("/auction.html") !== -1 && "focus" in list[i]) {
+            return list[i].focus();
+          }
+        }
+        if (self.clients.openWindow) return self.clients.openWindow(target);
+      })
+  );
+});
+
+/* Push services rotate a subscription from time to time, and the old address
+   stops working the moment they do. The browser tells us when it happens; if
+   we do not take up the new one here, the alerts simply stop and nobody finds
+   out until an auction has been missed. */
+
+function urlBase64ToUint8Array(value) {
+  var padded = (value + "=".repeat((4 - (value.length % 4)) % 4))
+                 .replace(/-/g, "+").replace(/_/g, "/");
+  var raw = self.atob(padded);
+  var out = new Uint8Array(raw.length);
+  for (var i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+  return out;
+}
+
+function tellTheDatabase(fn, body) {
+  return fetch(PUSH.url + "/rest/v1/rpc/" + fn, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: PUSH.key,
+      Authorization: "Bearer " + PUSH.key
+    },
+    body: JSON.stringify(body)
+  });
+}
+
+self.addEventListener("pushsubscriptionchange", function (event) {
+  event.waitUntil(
+    self.registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(PUSH.vapid)
+    }).then(function (sub) {
+      var json = sub.toJSON();
+      return tellTheDatabase("save_push_subscription", {
+        p_endpoint: sub.endpoint,
+        p_p256dh: json.keys.p256dh,
+        p_auth: json.keys.auth,
+        p_user_agent: self.navigator ? self.navigator.userAgent : null
+      }).then(function () {
+        var old = event.oldSubscription;
+        if (old) {
+          return tellTheDatabase("forget_push_subscription", { p_endpoint: old.endpoint });
+        }
+      });
+    }).catch(function (err) {
+      console.warn("[sw] could not renew the push subscription", err);
+    })
+  );
 });

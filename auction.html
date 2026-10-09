@@ -12,7 +12,11 @@
 <link rel="icon" href="/assets/img/icon-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="/assets/img/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="/assets/img/icon-180.png">
-<link rel="manifest" href="/manifest.webmanifest">
+<!-- Its own manifest, not the site's. Added to a Home Screen from here this
+     should open the auction, not the demo launcher — and on iPhone the alerts
+     below exist only for a page that has been installed, so what it installs
+     as matters. -->
+<link rel="manifest" href="/auction.webmanifest">
 
 <meta name="theme-color" content="#ffffff">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -59,6 +63,10 @@
         <a href="https://www.instagram.com/nazm_anwr/" rel="me noopener" target="_blank">Instagram</a>
         to hear when it opens.
       </p>
+
+      <!-- The second one. Somebody who arrives between lots is precisely the
+           person worth being able to tell when the next opens. -->
+      <div class="alerts" data-alerts hidden></div>
     </section>
 
     <!-- The lot. -->
@@ -128,13 +136,12 @@
                comes to, or nobody knows what they are agreeing to pay. -->
           <p class="bidbox__total" id="bid-total"></p>
           <p class="bidbox__msg" id="bid-msg"></p>
-
-          <p class="install-note" id="install-note" hidden>
-            <strong>On iPhone:</strong> tap Share, then <em>Add to Home Screen</em>,
-            to get an alert the moment someone outbids you. Without it, Apple
-            only allows us to email you.
-          </p>
         </div>
+
+        <!-- Filled in by auction-push.js, which knows what this particular
+             browser can actually do. Empty and hidden on one that cannot show
+             alerts at all, rather than offering something that will not work. -->
+        <div class="alerts" data-alerts hidden></div>
 
         <!-- Bidding needs a name to put on the board and a way to reach the
              winner, so this is asked once, before the first bid, and never
@@ -229,6 +236,7 @@
 <script src="/assets/js/bd-areas.js"></script>
 <script src="/assets/js/auction-config.js"></script>
 <script src="/assets/js/auction.js" defer></script>
+<script src="/assets/js/auction-push.js" defer></script>
 
 </body>
 </html>

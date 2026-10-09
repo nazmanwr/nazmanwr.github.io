@@ -409,16 +409,45 @@
    other way. Shown only to them.
    -------------------------------------------------------------------------- */
 
-.install-note {
-  margin-top: 1rem;
-  padding: 0.8rem 1rem;
-  border-left: 2px solid var(--ink);
+/* --- Alerts ----------------------------------------------------------------
+   Built by auction-push.js, which decides what this browser can be offered.
+   The rule sets it apart from the bidding above it without making it a second
+   thing competing for attention: it is an aside, not an action.
+-------------------------------------------------------------------------- */
+
+.alerts {
+  margin-top: 1.4rem;
+  padding: 0.9rem 0 0;
+  border-top: 1px solid var(--rule);
+}
+
+.alerts[hidden] { display: none; }
+
+.alerts__note {
+  margin: 0 0 0.8rem;
   font-size: 0.8125rem;
   line-height: 1.55;
   color: var(--ink-soft);
+  max-width: 42ch;
 }
 
-.install-note[hidden] { display: none; }
+/* Sized to its words rather than stretched across the column: the bid buttons
+   are the wide ones, and this must not read as a third of them. */
+.alerts .btn { flex: 0 0 auto; }
+
+.alerts__msg {
+  margin: 0.7rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--ink-faint);
+}
+
+/* In the empty state it is the only thing on the page below the paragraph, so
+   it does not need a rule to separate it from anything. */
+.no-lot .alerts {
+  margin-top: 2rem;
+  border-top: 0;
+  padding-top: 0;
+}
 
 /* --- Signing up to bid --------------------------------------------------------
    Stands where the bid buttons stand, rather than below them, because it is the

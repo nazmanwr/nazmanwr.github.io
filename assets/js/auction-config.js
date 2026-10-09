@@ -14,7 +14,13 @@
 
 window.AUCTION_CONFIG = {
   url: "https://ipwpeeoesesmerzsenoe.supabase.co",
-  key: "sb_publishable_2-4Z1B4cnpx_UDnlYVQ03A_GulNLoHm"
+  key: "sb_publishable_2-4Z1B4cnpx_UDnlYVQ03A_GulNLoHm",
+
+  // The public half of the alert signing key. It is meant to be here: a phone
+  // hands it to its push service when it subscribes, so that the service will
+  // accept alerts from us and from nobody else. The private half is set on the
+  // push-send function and exists nowhere in this repository.
+  vapid: "BG-siLK1pcarwMWURfHBEsY_oz7y3Ky-seI1oyzdD7yeufE-vbdQd966mB0EX1TriXFkeRfS1PrRJFEdNqagahY"
 };
 
 (function () {
@@ -240,6 +246,34 @@ window.AUCTION_CONFIG = {
         if (r.error) throw new Error(readable(r.error));
         return true;
       });
+    },
+
+    /* --- Alerts --------------------------------------------------------------
+       Both of these are open to a visitor with no account, deliberately: being
+       told that a lot has opened is how somebody becomes a bidder in the first
+       place, and asking them to sign up before they can hear about it would
+       lose exactly the people the alert is for.
+    ------------------------------------------------------------------------ */
+
+    savePushSubscription: function (sub) {
+      var json = sub.toJSON();
+      return db.rpc("save_push_subscription", {
+        p_endpoint: sub.endpoint,
+        p_p256dh: json.keys.p256dh,
+        p_auth: json.keys.auth,
+        p_user_agent: navigator.userAgent
+      }).then(function (r) {
+        if (r.error) throw new Error(r.error.message);
+        return true;
+      });
+    },
+
+    forgetPushSubscription: function (endpoint) {
+      return db.rpc("forget_push_subscription", { p_endpoint: endpoint })
+        .then(function (r) {
+          if (r.error) throw new Error(r.error.message);
+          return true;
+        });
     },
 
     signOut: function () { return db.auth.signOut(); },

@@ -71,7 +71,6 @@
     historyWrap: document.getElementById("history"),
     result: document.getElementById("result"),
     resultName: document.getElementById("result-name"),
-    install: document.getElementById("install-note"),
     join: document.getElementById("join"),
     joinForm: document.getElementById("join-form"),
     joinMsg: document.getElementById("join-msg"),
@@ -648,19 +647,11 @@
     });
   }
 
-  /* --- iPhone install prompt ------------------------------------------------ */
-
-  function maybeOfferInstall() {
-    if (!el.install) return;
-    var ua = navigator.userAgent;
-    var isIOS = /iPad|iPhone|iPod/.test(ua) ||
-                (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-    var standalone = window.navigator.standalone === true ||
-                     window.matchMedia("(display-mode: standalone)").matches;
-    el.install.hidden = !(isIOS && !standalone);
-  }
-
-  /* --- Go ------------------------------------------------------------------- */
+  /* --- Go -------------------------------------------------------------------
+     The iPhone "add to Home Screen" note used to be built here. It has moved to
+     auction-push.js, which is the file that knows whether this browser can show
+     an alert at all and therefore whether the note is worth showing.
+  -------------------------------------------------------------------------- */
 
   el.quick.addEventListener("click", function () { bid(this.dataset.amount); });
   el.bump.addEventListener("click", function () {
@@ -690,7 +681,6 @@
   buildAreas();
   if (el.joinForm) el.joinForm.addEventListener("submit", onJoin);
 
-  maybeOfferInstall();
   refresh(false);
 
   setInterval(renderClock, 1000);        // the clock never stops
