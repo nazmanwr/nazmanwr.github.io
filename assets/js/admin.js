@@ -67,26 +67,47 @@
 
   /* --- Artwork picker ------------------------------------------------------- */
 
+  function pickerItem(full, thumb, alt) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "picker__item";
+    b.setAttribute("role", "radio");
+    b.setAttribute("aria-checked", "false");
+    b.dataset.path = full;
+
+    var img = document.createElement("img");
+    img.src = thumb;   // the small one, for speed
+    img.alt = alt;
+    img.loading = "lazy";
+    img.decoding = "async";
+
+    b.appendChild(img);
+    b.addEventListener("click", pick);
+    f.picker.appendChild(b);
+  }
+
+  // The picker shows whatever the home page lists, so a listing added from
+  // the home page editor turns up here too. Should the page not load, it
+  // falls back to the numbered files the catalogue started with.
   function buildPicker() {
-    for (var i = 1; i <= CATALOGUE_COUNT; i++) {
-      var n = pad(i);
-      var b = document.createElement("button");
-      b.type = "button";
-      b.className = "picker__item";
-      b.setAttribute("role", "radio");
-      b.setAttribute("aria-checked", "false");
-      b.dataset.path = "/assets/img/art/full/" + n + ".jpg";
-
-      var img = document.createElement("img");
-      img.src = "/assets/img/art/" + n + ".jpg";   // the small one, for speed
-      img.alt = "Artwork " + i;
-      img.loading = "lazy";
-      img.decoding = "async";
-
-      b.appendChild(img);
-      b.addEventListener("click", pick);
-      f.picker.appendChild(b);
-    }
+    fetch("/index.html", { cache: "no-cache" }).then(function (r) {
+      if (!r.ok) throw new Error(r.status);
+      return r.text();
+    }).then(function (html) {
+      var doc = new DOMParser().parseFromString(html, "text/html");
+      var hits = doc.querySelectorAll(".pieces .piece__hit");
+      if (!hits.length) throw new Error("no listings");
+      Array.prototype.forEach.call(hits, function (a) {
+        var img = a.querySelector("img");
+        pickerItem(a.getAttribute("href"), img ? img.getAttribute("src") : a.getAttribute("href"),
+                   img ? img.getAttribute("alt") : "Artwork");
+      });
+    }).catch(function () {
+      for (var i = 1; i <= CATALOGUE_COUNT; i++) {
+        var n = pad(i);
+        pickerItem("/assets/img/art/full/" + n + ".jpg", "/assets/img/art/" + n + ".jpg", "Artwork " + i);
+      }
+    });
   }
 
   function clearPicked() {

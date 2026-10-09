@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Work page — NAZM ANWR</title>
+
+<!-- Not for the public, and not for search engines. -->
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+
+<link rel="stylesheet" href="/assets/css/catalog.css">
+<link rel="stylesheet" href="/assets/css/auction.css">
+<link rel="stylesheet" href="/assets/css/admin.css">
+<link rel="icon" href="/assets/img/icon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/assets/img/icon-180.png">
+
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<script src="/assets/js/site.js" defer></script>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap masthead__inner">
+    <div>
+      <a class="wordmark" href="/">NAZM ANWR</a>
+      <p class="masthead__line">Edit the work page</p>
+    </div>
+    <nav class="nav" aria-label="Admin">
+      <a href="/admin/auction.html">Auction</a>
+      <a href="/admin/home.html">Home</a>
+      <a href="/admin/work.html">Work</a>
+      <a href="/admin/workshop.html">Workshop</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="editor">
+  <div class="wrap">
+
+    <!-- Until this device has a GitHub token, this is all there is. -->
+    <section class="gate" id="connect" hidden>
+      <h1 class="gate__title">Connect to GitHub</h1>
+      <p class="gate__note">
+        The site lives on GitHub, so a change made here is saved straight into
+        it and the live page follows about a minute later. That needs a token,
+        made once and pasted here once per phone or iPad.
+      </p>
+      <ol class="gate__steps">
+        <li>On GitHub, open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Settings → Fine-grained tokens → Generate new token</a>.</li>
+        <li>Repository access: <strong>Only select repositories</strong> → <strong>nazmanwr.github.io</strong>.</li>
+        <li>Permissions → Repository → <strong>Contents: Read and write</strong>. Nothing else.</li>
+        <li>Pick an expiry, generate it, and paste it below.</li>
+      </ol>
+      <form class="gate__form" id="connect-form">
+        <label class="field">
+          <span class="field__label">Token</span>
+          <input id="connect-token" type="password" autocomplete="off" required
+                 placeholder="github_pat_…">
+        </label>
+        <button class="btn btn--primary" type="submit">Connect this device</button>
+      </form>
+      <p class="admin__msg" id="connect-msg"></p>
+    </section>
+
+    <div id="editor" hidden>
+
+      <div class="editor__intro">
+        <h1 class="gate__title">Work page — films</h1>
+        <p class="step__hint">Add or remove films, rename them, change their order, then press Publish. A film uploads when you publish, so keep the page open until it says Published.</p>
+        <p class="editor__meta">
+          <span id="count"></span> ·
+          <a href="/work.html" target="_blank" rel="noopener">View the live page</a> ·
+          <button class="linkish" type="button" id="disconnect">Disconnect this device</button>
+        </p>
+        <p class="admin__msg" id="save-msg"></p>
+        <p class="editor__loading" id="loading" hidden>Loading the page from GitHub…</p>
+      </div>
+
+      <form class="step addform" id="add-form">
+        <h2 class="step__title"><span class="step__n">+</span> Add a film</h2>
+        <label class="upload">
+          <span class="upload__label">Film</span>
+          <input type="file" id="a-video" accept="video/mp4,video/quicktime,video/*">
+        </label>
+        <p class="field__note">MP4 (H.264) plays everywhere. Under 50 MB is best; GitHub refuses anything over 100 MB.</p>
+        <label class="field">
+          <span class="field__label">Title</span>
+          <input id="a-title" type="text" placeholder="Tejgaon">
+        </label>
+        <div class="field-row">
+          <label class="field">
+            <span class="field__label">Poster image (optional)</span>
+            <span class="field__note">Left empty, a frame is taken from the film.</span>
+            <input id="a-poster" type="file" accept="image/*">
+          </label>
+          <label class="field">
+            <span class="field__label">Where it goes</span>
+            <select id="a-where">
+              <option value="first">First on the page</option>
+              <option value="last">Last on the page</option>
+            </select>
+          </label>
+        </div>
+        <div class="admin__actions">
+          <button class="btn btn--primary" type="submit">Add film</button>
+        </div>
+        <p class="admin__msg" id="add-msg"></p>
+      </form>
+
+      <ul class="rows" id="list"></ul>
+    </div>
+
+  </div>
+</main>
+
+<!-- Stays on screen while there is something to publish. -->
+<div class="savebar" id="savebar" hidden>
+  <div class="wrap savebar__inner">
+    <span class="savebar__text" id="savebar-text">Changes not published yet</span>
+    <div class="savebar__actions">
+      <button class="btn" type="button" id="discard">Discard</button>
+      <button class="btn btn--primary" type="button" id="save">Publish</button>
+    </div>
+  </div>
+</div>
+
+<script src="/assets/js/admin-formats.js"></script>
+<script src="/assets/js/admin-site.js"></script>
+<script src="/assets/js/admin-work.js" defer></script>
+
+</body>
+</html>

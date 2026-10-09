@@ -397,6 +397,23 @@ figcaption {
   padding: 0.75rem;
 }
 
+/* Albums. The first one usually has no title and sits straight under the
+   call; every titled one after it opens with a small heading in the same
+   voice as the film titles. An empty album is kept in the page but hidden. */
+.album[hidden] { display: none; }
+
+.album__title {
+  margin: clamp(2.5rem, 6vw, 4rem) 0 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.album__title + .gallery {
+  margin-top: 1rem;
+}
+
 /* --- About page ------------------------------------------------------------
    Portrait beside the bio, collapsing to a single column on a phone. The
    measure is held narrower than the catalogue's grid because this is the one
