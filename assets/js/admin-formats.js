@@ -40,6 +40,50 @@
     return m ? decode(m[1]) : "";
   }
 
+  /* --- Reading an <img> -------------------------------------------------------
+     Attributes in whatever order they happen to be written.
+
+     This used to be one regex demanding src, alt, width and height in exactly
+     that sequence. A tag written any other way — say with loading= first —
+     matched nothing, every field fell back to empty, and the editor published
+     src="" over every photograph on the page. The catalogue went blank.
+
+     An HTML attribute has no order. Reading it as though it did was the bug,
+     so this reads each one by name.
+  -------------------------------------------------------------------------- */
+
+  function imgAttrs(html) {
+    var tag = /<img\b[^>]*>/.exec(html);
+    if (!tag) return null;
+
+    function at(name) {
+      var m = new RegExp("\\s" + name + "=\"([^\"]*)\"").exec(tag[0]);
+      return m ? m[1] : "";
+    }
+
+    return {
+      src: decode(at("src")),
+      alt: decode(at("alt")),
+      w: Number(at("width")) || 0,
+      h: Number(at("height")) || 0
+    };
+  }
+
+  /* Refuse to carry on with an image we could not read. Publishing it would
+     write src="" over a real photograph, and the person pressing Publish has
+     no way to know until the page is live and empty. Better to stop at the
+     read, before anything has been edited. */
+  function requireImage(img, where) {
+    if (!img || !img.src) {
+      throw new Error(
+        "Could not read the image for " + (where || "one of the items") +
+        ". Nothing has been changed. The page's HTML is not in the shape the " +
+        "editor expects — fix it in the repository before editing here."
+      );
+    }
+    return img;
+  }
+
   function pad(s, n) { return new Array(n + 1).join(" ") + s; }
 
   // Indents every line but the first, which sits wherever it is placed.
@@ -80,7 +124,8 @@
       var re = /<li class="piece"( data-sold)?>([\s\S]*?)<\/li>/g, m;
       while ((m = re.exec(r.body))) {
         var li = m[2];
-        var img = /<img src="([^"]*)" alt="([^"]*)" width="(\d+)" height="(\d+)"/.exec(li) || [];
+        var title = grab(/<h2 class="piece__title">([\s\S]*?)<\/h2>/, li);
+        var img = requireImage(imgAttrs(li), title || "a piece");
         var dds = [], d, dre = /<dd( class="is-sold")?>([\s\S]*?)<\/dd>/g;
         while ((d = dre.exec(li))) dds.push(d[2]);
 
@@ -96,11 +141,11 @@
 
         items.push({
           full: grab(/<a class="piece__hit" href="([^"]*)"/, li),
-          src: decode(img[1] || ""),
-          alt: decode(img[2] || ""),
-          w: Number(img[3]) || 0,
-          h: Number(img[4]) || 0,
-          title: grab(/<h2 class="piece__title">([\s\S]*?)<\/h2>/, li),
+          src: img.src,
+          alt: img.alt,
+          w: img.w,
+          h: img.h,
+          title: title,
           size: decode(dds[0] || ""),
           price: price,
           note: note,
@@ -111,6 +156,11 @@
     },
 
     renderItem: function (p, i) {
+      // Belt and braces. Whatever went wrong upstream, an empty src must never
+      // be written: it replaces a photograph with nothing and the page goes
+      // blank without warning.
+      requireImage(p, p.title || "a piece");
+
       var price = p.sold
         ? '<dd class="is-sold"><s>' + text(p.price) + "</s> <em>Sold</em></dd>"
         : "<dd>" + text(p.price) + (p.note ? " <em>" + text(p.note) + "</em>" : "") + "</dd>";
@@ -202,13 +252,13 @@
     var re = /<li class="shot">([\s\S]*?)<\/li>/g, m;
     while ((m = re.exec(body))) {
       var li = m[1];
-      var img = /<img src="([^"]*)" alt="([^"]*)" width="(\d+)" height="(\d+)"/.exec(li) || [];
+      var img = requireImage(imgAttrs(li), "a workshop photograph");
       shots.push({
         full: grab(/<a class="piece__hit" href="([^"]*)"/, li),
-        src: decode(img[1] || ""),
-        alt: decode(img[2] || ""),
-        w: Number(img[3]) || 0,
-        h: Number(img[4]) || 0
+        src: img.src,
+        alt: img.alt,
+        w: img.w,
+        h: img.h
       });
     }
     return shots;
@@ -248,6 +298,7 @@
     },
 
     renderShot: function (s, i) {
+      requireImage(s, "a workshop photograph");
       return indent([
         '<li class="shot">',
         '  <a class="piece__hit" href="' + attr(s.full) + '">',
