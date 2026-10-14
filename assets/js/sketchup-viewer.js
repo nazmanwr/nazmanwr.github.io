@@ -14,7 +14,8 @@
 // shades a face.
 //
 // Like model-viewer.js, the page supplies the model through data-model on
-// <body>, so every SketchUp-style demo shares this file.
+// <body>, so every SketchUp-style demo shares this file. Buttons carrying
+// data-option-model turn the page into a switcher between design options.
 // ---------------------------------------------------------------------------
 
 import * as THREE from 'three';
@@ -306,8 +307,10 @@ function mainBounds(root) {
   return box;
 }
 
-function frame(object) {
-  const box = mainBounds(object);
+// keepView: when switching between design options, stay at the same spot
+// relative to the model instead of jumping back to the opening view, so the
+// client compares like with like.
+function frame(box, keepView) {
   if (box.isEmpty()) return;
 
   const size = box.getSize(new THREE.Vector3());
@@ -317,6 +320,7 @@ function frame(object) {
   camera.near = radius / 200;
   camera.far = radius * 100;
 
+  const shift = centre.clone().sub(homeTarget);
   homeBox = box.clone();
   homeDirection = homeDirectionFor(size);
   homeTarget = centre.clone();
@@ -332,7 +336,14 @@ function frame(object) {
   sun.target.position.copy(centre);
   sun.target.updateMatrixWorld();
 
-  resetView();
+  if (keepView) {
+    camera.position.add(shift);
+    controls.target.add(shift);
+    camera.updateProjectionMatrix();
+    controls.update();
+  } else {
+    resetView();
+  }
 }
 
 // SketchUp's opening view: a three-quarter angle from slightly above. A long
@@ -393,46 +404,108 @@ function fail(message) {
   errorBox.querySelector('.message').textContent = message;
 }
 
-new GLTFLoader().load(
-  modelUrl,
-  (gltf) => {
-    const converted = new Map();
-    const meshes = [];
+/* A page can offer design options: buttons carrying data-option-model, one
+   model each. The first shown is the one on <body>; the rest download in the
+   background once it is up, so a tap during a client meeting is instant. */
 
-    gltf.scene.traverse((child) => {
-      if (child.isMesh) meshes.push(child);
-    });
+const optionButtons = Array.from(document.querySelectorAll('[data-option-model]'));
+const prepared = new Map();   // url -> Promise of { model, box }
+let wanted = modelUrl;        // the model the viewer should be showing
+let shown = null;             // the merged model on screen
 
-    meshes.forEach((mesh) => {
-      const swap = (material) => {
-        if (!converted.has(material)) converted.set(material, toSketchUpMaterial(material));
-        return converted.get(material);
-      };
-      mesh.material = Array.isArray(mesh.material) ? mesh.material.map(swap) : swap(mesh.material);
-    });
+function labelFor(url) {
+  const button = optionButtons.find((b) => b.dataset.optionModel === url);
+  return button ? button.textContent.trim() : 'model';
+}
 
-    // Framing measures the parts one by one, so it runs before they merge.
-    frame(gltf.scene);
-    scene.add(mergeModel(gltf.scene));
-    // The originals were copied into the merge; free their GPU-side copies.
-    gltf.scene.traverse((child) => {
-      if (child.isMesh) child.geometry.dispose();
-    });
-    loader.hidden = true;
-  },
-  (event) => {
-    if (event.lengthComputable && event.total) {
-      const pct = Math.round((event.loaded / event.total) * 100);
-      status.textContent = `Loading model… ${pct}%`;
-    }
-  },
-  (err) => {
-    fail(
-      'The model could not be loaded. If you are offline, open this once on ' +
-      'a connection first. (' + (err && err.message ? err.message : err) + ')'
-    );
+function prepare(url) {
+  if (!prepared.has(url)) {
+    prepared.set(url, new Promise((resolve, reject) => {
+      new GLTFLoader().load(
+        url,
+        (gltf) => {
+          const converted = new Map();
+          gltf.scene.traverse((mesh) => {
+            if (!mesh.isMesh) return;
+            const swap = (material) => {
+              if (!converted.has(material)) converted.set(material, toSketchUpMaterial(material));
+              return converted.get(material);
+            };
+            mesh.material = Array.isArray(mesh.material) ? mesh.material.map(swap) : swap(mesh.material);
+          });
+
+          // Framing measures the parts one by one, so it runs before they merge.
+          const box = mainBounds(gltf.scene);
+          const model = mergeModel(gltf.scene);
+          // The originals were copied into the merge; free their GPU-side copies.
+          gltf.scene.traverse((child) => {
+            if (child.isMesh) child.geometry.dispose();
+          });
+          resolve({ model, box });
+        },
+        (event) => {
+          if (url === wanted && !loader.hidden && event.lengthComputable && event.total) {
+            const pct = Math.round((event.loaded / event.total) * 100);
+            status.textContent = `Loading ${labelFor(url)}… ${pct}%`;
+          }
+        },
+        (err) => {
+          prepared.delete(url);   // let the next tap try again
+          reject(err);
+        }
+      );
+    }));
   }
-);
+  return prepared.get(url);
+}
+
+function show(url) {
+  wanted = url;
+  optionButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.optionModel === url)));
+  let ready = false;
+  prepare(url).then(
+    ({ model, box }) => {
+      ready = true;
+      if (url !== wanted) return;
+      const switching = shown !== null;
+      if (shown) scene.remove(shown);
+      scene.add(model);
+      shown = model;
+      frame(box, switching);
+      loader.hidden = true;
+      errorBox.hidden = true;
+    },
+    (err) => {
+      if (url !== wanted) return;
+      fail(
+        'The model could not be loaded. If you are offline, open this once on ' +
+        'a connection first. (' + (err && err.message ? err.message : err) + ')'
+      );
+    }
+  );
+  // Only cover the screen if the model is not already waiting in memory.
+  Promise.resolve().then(() => {
+    if (!ready && url === wanted) {
+      status.textContent = `Loading ${labelFor(url)}…`;
+      loader.hidden = false;
+    }
+  });
+  return prepared.get(url);
+}
+
+optionButtons.forEach((button) => {
+  button.addEventListener('click', () => {
+    if (button.dataset.optionModel !== wanted) show(button.dataset.optionModel);
+  });
+});
+
+show(modelUrl).then(() => {
+  // One at a time, so the background downloads do not compete with each other.
+  optionButtons
+    .map((b) => b.dataset.optionModel)
+    .filter((url) => url !== modelUrl)
+    .reduce((chain, url) => chain.then(() => prepare(url)).catch(() => {}), Promise.resolve());
+}, () => {});
 
 /* --- Resize and render ----------------------------------------------------- */
 

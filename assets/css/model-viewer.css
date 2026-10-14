@@ -69,6 +69,31 @@ html, body {
   font-family: inherit;
 }
 
+/* Design options (sketchup-viewer.js): one model at a time. Top centre where
+   the row is wide enough to clear the title; below the Demos pill otherwise. */
+.options {
+  position: fixed;
+  z-index: 20;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+}
+
+.options .pill {
+  position: static;
+  font-family: inherit;
+}
+
+@media (max-width: 56rem) {
+  .options {
+    top: calc(64px + env(safe-area-inset-top, 0px));
+    left: calc(12px + env(safe-area-inset-left, 0px));
+    transform: none;
+  }
+}
+
 /* Off reads as recessed rather than as a different control. */
 .pill[aria-pressed="false"] {
   color: #8a8a8f;

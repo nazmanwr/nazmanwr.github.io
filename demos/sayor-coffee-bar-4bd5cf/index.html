@@ -27,10 +27,20 @@
 </script>
 </head>
 
-<body data-model="model.glb?v=3">
+<body data-model="option-1.glb?v=1">
 
 <a class="pill" id="back-to-demos" href="/demos/">&#8592; Demos</a>
 <p class="title">Sayor Coffee — counter</p>
+
+<!-- The three counters in sayor coffee 3.skp, left to right along the red
+     axis, each exported on its own with skp2glb --keep-x (-5,11 / 11,26 / 28,60;
+     option 2 stops at 26 to leave out a stray floor square). Bump ?v= on both
+     the button and data-model when a file is replaced. -->
+<div class="options" role="group" aria-label="Design options">
+  <button class="pill" type="button" data-option-model="option-1.glb?v=1" aria-pressed="true">Option 1</button>
+  <button class="pill" type="button" data-option-model="option-2.glb?v=2" aria-pressed="false">Option 2</button>
+  <button class="pill" type="button" data-option-model="option-3.glb?v=1" aria-pressed="false">Option 3</button>
+</div>
 
 <div id="stage">
   <div id="loader">
