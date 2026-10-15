@@ -114,6 +114,20 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.08;
 controls.screenSpacePanning = true;
 
+// Orbit stays above the floor: past the horizon the camera ends up under the
+// slab, looking at the underside of the counter with the sky below it. And
+// short of straight down, where the view spins about the pole.
+controls.minPolarAngle = 0.05;
+controls.maxPolarAngle = Math.PI / 2 - 0.03;
+
+// A finger covers ground much faster than a mouse: at the mouse's speed, a
+// thumb's-width swipe on an iPad swung the model round 90°. Halve it for touch.
+// OrbitControls reads rotateSpeed on every move, so setting it on pointerdown
+// (after its own handler) takes effect for the whole drag.
+renderer.domElement.addEventListener('pointerdown', (event) => {
+  controls.rotateSpeed = event.pointerType === 'touch' ? 0.5 : 1;
+});
+
 /* --- Materials and edges ---------------------------------------------------
    Every face is pushed back slightly in depth, so the edge lines drawn exactly
    on top of it win the depth test instead of flickering in and out.
