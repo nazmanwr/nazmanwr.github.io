@@ -27,20 +27,19 @@
 </script>
 </head>
 
-<body data-model="option-1.glb?v=3">
+<body data-model="option-1.glb?v=4">
 
 <a class="pill" id="back-to-demos" href="/demos/">&#8592; Demos</a>
 <p class="title">Sayor Coffee — counter</p>
 
-<!-- The three counters in sayor coffee 4.glb (SimLab export), left to right
-     along the red axis, each cut out with glbsplit --keep-x (-5,11 / 11,26.5 /
-     28,60; option 2 stops at 26.5 to keep its end panel at 26.0 and leave out
-     a stray floor square at 27.0). Bump ?v= on both the button and data-model
-     when a file is replaced. -->
+<!-- The three counters, one SimLab export each (supplied 2026-10-15), slimmed
+     with glbsplit --keep-x -1000,1000: repeated components stored once,
+     textures capped at 1024 px, nothing cut. Bump ?v= on both the button and
+     data-model when a file is replaced. -->
 <div class="options" role="group" aria-label="Design options">
-  <button class="pill" type="button" data-option-model="option-1.glb?v=3" aria-pressed="true">Option 1</button>
-  <button class="pill" type="button" data-option-model="option-2.glb?v=4" aria-pressed="false">Option 2</button>
-  <button class="pill" type="button" data-option-model="option-3.glb?v=3" aria-pressed="false">Option 3</button>
+  <button class="pill" type="button" data-option-model="option-1.glb?v=4" aria-pressed="true">Option 1</button>
+  <button class="pill" type="button" data-option-model="option-2.glb?v=5" aria-pressed="false">Option 2</button>
+  <button class="pill" type="button" data-option-model="option-3.glb?v=4" aria-pressed="false">Option 3</button>
 </div>
 
 <div id="stage">
