@@ -145,11 +145,11 @@ td .note{font:600 15px var(--body);color:var(--ink)}
       <div class="row2">
         <div class="field">
           <label for="id">Inner Ø (mm)</label>
-          <input type="number" id="id" value="19" step="1" min="6">
+          <input type="number" id="id" value="19" step="0.1" min="6">
         </div>
         <div class="field">
           <label for="od">Outer Ø (mm)</label>
-          <input type="number" id="od" value="25" step="1" min="7">
+          <input type="number" id="od" value="25" step="0.1" min="7">
         </div>
       </div>
       <div class="field">
@@ -318,6 +318,70 @@ function parseNotes(str, startOct) {
   return out;
 }
 
+/* ---------- transfer-matrix model ---------- */
+// Plane-wave transfer matrices along the bore with Dalmont/Lefebvre tone-hole elements.
+// The jet sees the embouchure inertance in series with the body and the closed head cavity
+// (embouchure to stopper) in parallel; a note sounds where that impedance is least.
+// g = { c, ID, wall, Cemb, stopDist, Xend, X: [], d: [] }, holes lowest first, X from embouchure.
+const cx = (re, im = 0) => ({ re, im });
+const cadd = (x, y) => cx(x.re + y.re, x.im + y.im);
+const cmul = (x, y) => cx(x.re * y.re - x.im * y.im, x.re * y.im + x.im * y.re);
+const cdiv = (x, y) => { const q = y.re * y.re + y.im * y.im; return cx((x.re * y.re + x.im * y.im) / q, (x.im * y.re - x.re * y.im) / q); };
+const cpar = (x, y) => cdiv(cmul(x, y), cadd(x, y));
+function zin(g, f, open) {
+  const k = 2 * Math.PI * f / g.c, b = g.ID / 2, Zc = 1 / (Math.PI * b * b), w = g.wall;
+  const tube = (Z, L) => {
+    const cs = Math.cos(k * L), sn = Math.sin(k * L);
+    return cdiv(cadd(cmul(Z, cx(cs)), cx(0, Zc * sn)), cadd(cx(cs), cmul(Z, cx(0, sn / Zc))));
+  };
+  let Z = cx(Zc * (k * b) ** 2 / 4, Zc * k * 0.6133 * b);   // unflanged open foot
+  let pos = g.Xend;
+  g.X.forEach((x, i) => {
+    Z = tube(Z, pos - x); pos = x;
+    const a = g.d[i] / 2, Zh = 1 / (Math.PI * a * a), dl = a / b;
+    const ti = a * (0.822 - 0.095 * dl - 1.566 * dl ** 2 + 2.138 * dl ** 3 - 1.640 * dl ** 4 + 0.502 * dl ** 5);
+    let Zs, ta;
+    if (i < open) {
+      Zs = cx(Zh * (k * a) ** 2 / 4, Zh * k * (w + ti + 0.82 * a * (1 - 0.235 * dl)));
+      ta = -0.47 * a * dl ** 4 / (Math.tanh(1.84 * w / a) + 0.62 * dl ** 2 + 0.64 * dl);
+    } else {
+      Zs = cx(0, -Zh / Math.tan(k * (w + ti)));             // a closed hole is a small side cavity
+      ta = -0.12 * a * dl ** 4 / (1 + 0.62 * dl ** 2 + 0.64 * dl);
+    }
+    const Za = cx(0, Zh * k * ta / 2);
+    Z = cadd(Za, cpar(Zs, cadd(Z, Za)));
+  });
+  Z = tube(Z, pos);
+  Z = cpar(Z, cx(0, -Zc / Math.tan(k * g.stopDist)));
+  return cadd(Z, cx(0, Zc * k * g.Cemb));
+}
+// Sounding frequency near target t with `open` holes open from the foot.
+function playedFreq(g, t, open) {
+  const lo = t * 0.85, hi = t * 1.18, n = 60, at = i => lo * (hi / lo) ** (i / n);
+  const m = f => { const z = zin(g, f, open); return z.re * z.re + z.im * z.im; };
+  let bi = 0, bm = Infinity;
+  for (let i = 0; i <= n; i++) { const v = m(at(i)); if (v < bm) { bm = v; bi = i; } }
+  let a = at(bi - 1), b = at(bi + 1);
+  for (let j = 0; j < 30; j++) { const m1 = a + (b - a) * 0.382, m2 = a + (b - a) * 0.618; if (m(m1) < m(m2)) b = m2; else a = m1; }
+  return (a + b) / 2;
+}
+// Move the foot and each hole until every note sounds at its target.
+function placeHoles(g, f) {
+  for (let sweep = 0; sweep < 10; sweep++) {
+    let worst = 0;
+    for (let i = -1; i < g.X.length; i++) {
+      for (let it = 0; it < 6; it++) {
+        const err = playedFreq(g, f[i + 1], i + 1) / f[i + 1] - 1;
+        if (it === 0) worst = Math.max(worst, Math.abs(err));
+        if (Math.abs(err) < 1e-5) break;
+        if (i < 0) g.Xend += (g.Xend + g.Cemb) * err; else g.X[i] += (g.X[i] + g.Cemb) * err;
+      }
+    }
+    if (worst < 5e-5) break;
+  }
+}
+const centsOff = (fp, t) => 1200 * Math.log2(fp / t);
+
 /* ---------- acoustics ---------- */
 function design(p) {
   const need = [['ID', 'Inner diameter'], ['OD', 'Outer diameter'], ['T', 'Air temperature'], ['A4', 'A4 reference'], ['dmin', 'Smallest hole'], ['dmax', 'Largest hole'], ['stopLen', 'Stopper length']];
@@ -388,19 +452,29 @@ function design(p) {
     d = d.map(x => clamp(rmm(x), p.dmin, p.dmax));
   }
   const s = solve(d);
-  if (!s.ok || s.X.some((x, i) => !(x < (i === 0 ? s.Xend : s.X[i - 1]))))
+  const badOrder = s => s.X.some((x, i) => !(x < (i === 0 ? s.Xend : s.X[i - 1]))) || !(s.X[N - 1] > 0);
+  if (!s.ok || badOrder(s))
     throw new Error('A hole could not be placed: two neighbouring notes are too close for these hole sizes. Use smaller holes or a wider bore.');
+  const stopDist = p.stopAuto ? rmm(ID) : p.stopDist;
+  if (!(stopDist > 0)) throw new Error('Stopper distance must be above 0 mm.');
+  // The formulas above give the starting positions; the transfer-matrix model sets the final ones.
+  const g = { c, ID, wall, Cemb, stopDist, Xend: s.Xend, X: s.X.slice(), d };
+  placeHoles(g, f);
+  if (badOrder(g)) throw new Error('A hole could not be placed: two neighbouring notes are too close for these hole sizes. Use smaller holes or a wider bore.');
   // Snap positions to whole millimetres so every listed distance is an integer and they all add up.
-  s.Xend = Math.round(s.Xend); s.X = s.X.map(Math.round);
-  if (s.X.some((x, i) => !(x < (i === 0 ? s.Xend : s.X[i - 1]))))
+  s.Xend = g.Xend = Math.round(g.Xend); s.X = g.X = g.X.map(Math.round);
+  if (badOrder(s))
     throw new Error('Two holes land on the same millimetre. Use smaller holes or a wider bore.');
+  // What the rounded flute should play, per note, in cents from the target.
+  const pred = f.map((t, i) => centsOff(playedFreq(g, t, i), t));
+  const predOver = overblown ? centsOff(playedFreq(g, overblown.f, 0), overblown.f) : null;
 
   const holes = d.map((di, i) => {
     const below = i === 0 ? s.Xend : s.X[i - 1];
     const gap = below - s.X[i];
     const te = wall + 0.75 * di;
     return {
-      i, note: fing[i + 1], d: di, X: s.X[i], fromFoot: s.Xend - s.X[i], gap,
+      i, note: fing[i + 1], d: di, X: s.X[i], fromFoot: s.Xend - s.X[i], gap, pred: pred[i + 1],
       cutoff: 0.11 * c * (di / ID) / Math.sqrt((gap / 2) * te), clamp: clamped[i] || ''
     };
   });
@@ -429,13 +503,12 @@ function design(p) {
     if (hitMax.length) msgs.push(['warn', `${hitMax.join(', ')} wanted a hole larger than ${p.dmax} mm and was limited to it. These notes will be slightly weaker. A lower tone setting evens them out.`]);
   }
 
-  const stopDist = p.stopAuto ? rmm(ID) : p.stopDist;
-  if (!(stopDist > 0)) throw new Error('Stopper distance must be above 0 mm.');
   const stopLen = Math.max(0, p.stopLen);
   const headLen = stopDist + stopLen;
   return {
     p, notes, fing, overblown, N, ID, OD, wall, c, De, Cemb, Cend, fc,
-    Xend: s.Xend, holes, stopDist, stopLen, headLen, Lt: headLen + s.Xend, msgs
+    Xend: s.Xend, holes, stopDist, stopLen, headLen, Lt: headLen + s.Xend, msgs,
+    predFoot: pred[0], predOver
   };
 }
 
@@ -537,7 +610,7 @@ function geomDXF(g) {
   const str = s => s.replace(/Ø/g, '%%c').replace(/°/g, '%%d').replace(/[^\x20-\x7e]/g, '?');
   const b = geomBox(g, 0);
   p(0, 'SECTION', 2, 'HEADER', 9, '$ACADVER', 1, 'AC1009',
-    9, '$EXTMIN', 10, n(b.x0), 20, n(b.y0), 9, '$EXTMAX', 10, n(b.x1), 20, n(b.y1), 9, '$LTSCALE', 40, 1, 0, 'ENDSEC');
+    9, '$EXTMIN', 10, n(b.x0), 20, n(b.y0), 9, '$EXTMAX', 10, n(b.x1), 20, n(b.y1), 9, '$LTSCALE', 40, 1, 9, '$INSUNITS', 70, 4, 0, 'ENDSEC');
   p(0, 'SECTION', 2, 'TABLES', 0, 'TABLE', 2, 'LTYPE', 70, 2,
     0, 'LTYPE', 2, 'CONTINUOUS', 70, 0, 3, 'Solid line', 72, 65, 73, 0, 40, 0,
     0, 'LTYPE', 2, 'CENTER', 70, 0, 3, 'Center ____ _ ____', 72, 65, 73, 4, 40, 20, 49, 12, 49, -3, 49, 2, 49, -3, 0, 'ENDTAB');
@@ -745,7 +818,7 @@ function readParams() {
   const n = id => Math.round(parseFloat($(id).value)); // whole numbers only
   return {
     notes: $('notes').value, startOct: +$('oct').value, A4: parseFloat($('a4').value),
-    ID: n('id'), OD: n('od'), material: $('material').value,
+    ID: parseFloat($('id').value), OD: parseFloat($('od').value), material: $('material').value,
     sizing: $('szMan').checked ? 'manual' : 'auto', manual: $('manual').value, cut: parseFloat($('cut').value),
     dmin: n('dmin'), dmax: n('dmax'),
     embAuto: $('embAuto').checked, embD: n('emb'),
@@ -766,28 +839,28 @@ function renderSummary(r) {
 }
 function renderTable(r) {
   const N = r.N;
+  const ct = v => `${Math.round(v) > 0 ? '+' : ''}${Math.round(v)} ¢`;
   const dots = k => Array.from({ length: N }, (_, j) => j < k ? '●' : '○').join('');
   const rows = [];
-  rows.push(`<tr><th>Hole</th><th>Note</th><th>Frequency</th><th>Hole Ø</th><th>From embouchure</th><th>From foot</th><th>Gap below</th><th>Fingering</th><th>Cutoff</th></tr>`);
-  rows.push(`<tr class="ref"><td>Embouchure</td><td></td><td></td><td>${wn(r.De)} mm</td><td>0</td><td>${wn(r.Xend)}</td><td></td><td></td><td></td></tr>`);
+  rows.push(`<tr><th>Hole</th><th>Note</th><th>Frequency</th><th>Hole Ø</th><th>From embouchure</th><th>From foot</th><th>Gap below</th><th>Fingering</th><th>Cutoff</th><th>Predicted</th></tr>`);
+  rows.push(`<tr class="ref"><td>Embouchure</td><td></td><td></td><td>${wn(r.De)} mm</td><td>0</td><td>${wn(r.Xend)}</td><td></td><td></td><td></td><td></td></tr>`);
   r.holes.slice().reverse().forEach((h, k) => {
-    rows.push(`<tr><td>H${k + 1}${k === 0 ? ' (top)' : ''}</td><td><span class="note">${h.note.name}</span></td><td>${h.note.f.toFixed(1)} Hz</td><td><b>${wn(h.d)} mm</b>${h.clamp ? ' *' : ''}</td><td>${wn(h.X)}</td><td>${wn(h.fromFoot)}</td><td>${wn(h.gap)}</td><td class="dots" aria-label="${k} closed">${dots(k)}</td><td>${Math.round(h.cutoff)} Hz</td></tr>`);
+    rows.push(`<tr><td>H${k + 1}${k === 0 ? ' (top)' : ''}</td><td><span class="note">${h.note.name}</span></td><td>${h.note.f.toFixed(1)} Hz</td><td><b>${wn(h.d)} mm</b>${h.clamp ? ' *' : ''}</td><td>${wn(h.X)}</td><td>${wn(h.fromFoot)}</td><td>${wn(h.gap)}</td><td class="dots" aria-label="${k} closed">${dots(k)}</td><td>${Math.round(h.cutoff)} Hz</td><td>${ct(h.pred)}</td></tr>`);
   });
-  rows.push(`<tr><td>Foot end</td><td><span class="note">${r.fing[0].name}</span></td><td>${r.fing[0].f.toFixed(1)} Hz</td><td>${wn(r.ID)} bore</td><td>${wn(r.Xend)}</td><td>0</td><td></td><td class="dots">${dots(N)}</td><td></td></tr>`);
-  if (r.overblown) rows.push(`<tr class="ref"><td>Overblown</td><td><span class="note">${r.overblown.name}</span></td><td>${r.overblown.f.toFixed(1)} Hz</td><td colspan="4">All holes closed, blow harder for the second register</td><td class="dots">${dots(N)}</td><td></td></tr>`);
+  rows.push(`<tr><td>Foot end</td><td><span class="note">${r.fing[0].name}</span></td><td>${r.fing[0].f.toFixed(1)} Hz</td><td>${wn(r.ID)} bore</td><td>${wn(r.Xend)}</td><td>0</td><td></td><td class="dots">${dots(N)}</td><td></td><td>${ct(r.predFoot)}</td></tr>`);
+  if (r.overblown) rows.push(`<tr class="ref"><td>Overblown</td><td><span class="note">${r.overblown.name}</span></td><td>${r.overblown.f.toFixed(1)} Hz</td><td colspan="4">All holes closed, blow harder for the second register</td><td class="dots">${dots(N)}</td><td></td><td>${ct(r.predOver)}</td></tr>`);
   $('table').innerHTML = rows.join('');
 }
 function renderMethod(r) {
   $('method').innerHTML = `
-<p>The solver treats the flute as a tube open at both ends. The embouchure hole counts as an open end, so each note needs an acoustic length of <code>c / 2f</code>. Hole positions then follow the Benade/Nederveen tone-hole model, the same method used by the Flutomat calculator.</p>
+<p>Hole positions come from a transfer-matrix model of the flute: plane waves along the bore, each open or closed hole as a side branch (Dalmont and Lefebvre tone-hole elements), the open foot as a radiating end, and the embouchure as an inertance in series with the body, with the closed head cavity up to the stopper in parallel. A note sounds where the impedance the air jet sees is lowest. The calculator moves the foot and each hole until every note sounds at its target, then rounds to whole millimetres. The Predicted column is what the rounded flute should play.</p>
 <ul>
 <li>Speed of sound at ${r.p.T} °C: <code>c = 331.3·√(1 + T/273.15) = ${(r.c / 1000).toFixed(1)} m/s</code></li>
-<li>Embouchure correction: <code>(B/Dₑ)²·10.84·w·Dₑ/(B + 2w) = ${wn(r.Cemb)} mm</code>, with bore B = ${wn(r.ID)}, wall w = ${wn(r.wall)}, embouchure Dₑ = ${wn(r.De)}</li>
-<li>Open foot end correction: <code>0.30665·B = ${wn(r.Cend)} mm</code>. Each closed hole adds <code>0.25·w·(d/B)²</code>.</li>
-<li>Each open hole adds an extra length <code>C = ½·L·(√(1 + 4·tₑ·(B/d)²/L) − 1)</code>, where <code>tₑ = w + 0.75·d</code> and L is the distance to the next open hole below. The calculator solves this exactly for each hole position.</li>
-<li>Automatic hole size: every hole gets the same tone-hole cutoff <code>f꜀ = 0.11·c·(d/B)/√(s·tₑ) ≈ ${Math.round(r.fc)} Hz</code>, where 2s is the hole spacing. Sizes are rounded to whole-millimetre drill sizes, and the positions are recalculated for the rounded sizes.</li>
+<li>Embouchure inertance, as extra bore length: <code>(B/Dₑ)²·10.84·w·Dₑ/(B + 2w) = ${wn(r.Cemb)} mm</code>, with bore B = ${wn(r.ID)}, wall w = ${wn(r.wall)}, embouchure Dₑ = ${wn(r.De)}. The head cavity is ${wn(r.stopDist)} mm, embouchure centre to stopper face.</li>
+<li>Starting positions use the Benade/Nederveen formulas from the Flutomat calculator. Those formulas undercount the effect of closed holes and treat the lowest hole as if more open holes lay below it, which leaves the bottom note flat and the scale stretched by 10–40 cents. The transfer-matrix step removes that error.</li>
+<li>Automatic hole size: every hole gets the same tone-hole cutoff <code>f꜀ = 0.11·c·(d/B)/√(s·tₑ) ≈ ${Math.round(r.fc)} Hz</code>, where 2s is the hole spacing and <code>tₑ = w + 0.75·d</code>. Sizes are rounded to whole-millimetre drill sizes before the positions are solved.</li>
 </ul>
-<p>Expect results within a few cents. Your embouchure, how far you cover the blow hole, and wall finish all shift the pitch. Drill each hole undersize, check it with a tuner, and open it up gradually. A bigger hole raises the pitch, and so does moving it toward the embouchure.</p>`;
+<p>Enter the bore and outside diameter as measured on your tube, to the tenth of a millimetre: half a millimetre of bore error moves the scale by about 10 cents. Your embouchure, how far you cover the blow hole, and wall finish still shift the pitch. Drill each hole undersize, check it with a tuner, and open it up gradually. A bigger hole raises the pitch, and so does moving it toward the embouchure.</p>`;
 }
 function renderMsgs(r, err) {
   const box = $('msgs');
