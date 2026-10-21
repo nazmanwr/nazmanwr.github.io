@@ -406,7 +406,11 @@ function design(p) {
   const c = 331.3 * Math.sqrt(1 + p.T / 273.15) * 1000;          // mm/s
   const De = p.embAuto ? rmm(clamp(0.53 * ID, 5, 16)) : p.embD;
   if (!(De > 2)) throw new Error('Embouchure hole diameter must be above 2 mm.');
-  const Cemb = (ID / De) ** 2 * 10.84 * wall * De / (ID + 2 * wall); // embouchure correction
+  // Embouchure correction as extra bore length: the hole's own length plus the air moving just inside
+  // and outside it, partly covered by the lip. Flutomat's 10.84·w·Dₑ/(B + 2w) is proportional to the wall
+  // and collapses on thin pipe: a 16/18 mm pipe built from it played a semitone to a quarter-tone flat.
+  // w + 1.05·Dₑ matches that flute (38 mm) and Flutomat on a 3 mm wall (47 mm).
+  const Cemb = (ID / De) ** 2 * (wall + 1.05 * De);
   const Cend = 0.30665 * ID;                                        // open foot end correction
   const f = fing.map(n => n.f);
 
@@ -856,7 +860,7 @@ function renderMethod(r) {
 <p>Hole positions come from a transfer-matrix model of the flute: plane waves along the bore, each open or closed hole as a side branch (Dalmont and Lefebvre tone-hole elements), the open foot as a radiating end, and the embouchure as an inertance in series with the body, with the closed head cavity up to the stopper in parallel. A note sounds where the impedance the air jet sees is lowest. The calculator moves the foot and each hole until every note sounds at its target, then rounds to whole millimetres. The Predicted column is what the rounded flute should play.</p>
 <ul>
 <li>Speed of sound at ${r.p.T} °C: <code>c = 331.3·√(1 + T/273.15) = ${(r.c / 1000).toFixed(1)} m/s</code></li>
-<li>Embouchure inertance, as extra bore length: <code>(B/Dₑ)²·10.84·w·Dₑ/(B + 2w) = ${wn(r.Cemb)} mm</code>, with bore B = ${wn(r.ID)}, wall w = ${wn(r.wall)}, embouchure Dₑ = ${wn(r.De)}. The head cavity is ${wn(r.stopDist)} mm, embouchure centre to stopper face.</li>
+<li>Embouchure inertance, as extra bore length: <code>(B/Dₑ)²·(w + 1.05·Dₑ) = ${wn(r.Cemb)} mm</code>, with bore B = ${wn(r.ID)}, wall w = ${wn(r.wall)}, embouchure Dₑ = ${wn(r.De)}. This is the hole's own length plus the air moving just inside and outside it, partly covered by your lip. It was calibrated on a flute built from 16/18 mm pipe and agrees with Flutomat on a 3 mm wall, where Flutomat's wall-only formula works; on thin pipe that formula falls to under half and the flute plays a semitone flat. The head cavity is ${wn(r.stopDist)} mm, embouchure centre to stopper face.</li>
 <li>Starting positions use the Benade/Nederveen formulas from the Flutomat calculator. Those formulas undercount the effect of closed holes and treat the lowest hole as if more open holes lay below it, which leaves the bottom note flat and the scale stretched by 10–40 cents. The transfer-matrix step removes that error.</li>
 <li>Automatic hole size: every hole gets the same tone-hole cutoff <code>f꜀ = 0.11·c·(d/B)/√(s·tₑ) ≈ ${Math.round(r.fc)} Hz</code>, where 2s is the hole spacing and <code>tₑ = w + 0.75·d</code>. Sizes are rounded to whole-millimetre drill sizes before the positions are solved.</li>
 </ul>
