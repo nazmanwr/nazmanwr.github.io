@@ -12,11 +12,11 @@
 <link rel="icon" href="/assets/img/icon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/assets/img/icon-180.png">
 
-<meta name="theme-color" content="#f2f2f0">
+<meta name="theme-color" content="#f4f7fa">
 <meta name="apple-mobile-web-app-capable" content="yes">
 
 <!-- Bare specifiers pointing at the vendored copy of three r160, shared with
-     the other model demo. Nothing here touches the network. -->
+     the other model demos. Nothing here touches the network. -->
 <script type="importmap">
 {
   "imports": {
@@ -27,7 +27,7 @@
 </script>
 </head>
 
-<body data-model="model.glb">
+<body data-model="model.glb?v=2">
 
 <a class="pill" id="back-to-demos" href="/demos/">&#8592; Demos</a>
 <p class="title">Bed</p>
@@ -45,11 +45,11 @@
 
 <div class="controls">
   <button class="pill" type="button" id="reset-view">Reset view</button>
-  <button class="pill" type="button" id="toggle-ao" aria-pressed="true" aria-label="Ambient occlusion">AO on</button>
+  <button class="pill" type="button" id="toggle-edges" aria-pressed="true" aria-label="Edges">Edges on</button>
 </div>
 <p class="hint">Drag to orbit · scroll to zoom · right-drag to pan</p>
 
-<script type="module" src="/assets/js/model-viewer.js"></script>
+<script type="module" src="/assets/js/sketchup-viewer.js"></script>
 
 </body>
 </html>
