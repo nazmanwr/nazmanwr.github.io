@@ -208,7 +208,18 @@ function mergeModel(root) {
   const edgeCache = new Map();
   const unmerged = [];
 
+  // A model from skp2glb carries SketchUp's own visible edges as lines. Draw
+  // those and nothing else: the crease guess would add softened edges back.
+  let ownEdges = false;
+  root.traverse((object) => { if (object.isLineSegments) ownEdges = true; });
+
   root.traverse((mesh) => {
+    if (mesh.isLineSegments) {
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', mesh.geometry.attributes.position.clone());
+      edgePieces.push(geometry.applyMatrix4(mesh.matrixWorld));
+      return;
+    }
     if (!mesh.isMesh) return;
     if (Array.isArray(mesh.material)) { unmerged.push(mesh); return; }
 
@@ -217,6 +228,7 @@ function mergeModel(root) {
     if (!batches.has(key)) batches.set(key, { material: mesh.material, geometries: [] });
     batches.get(key).geometries.push(geometry);
 
+    if (ownEdges) return;
     let edges = edgeCache.get(mesh.geometry);
     if (!edges) {
       edges = new THREE.EdgesGeometry(mesh.geometry, EDGE_ANGLE);
@@ -244,6 +256,11 @@ function mergeModel(root) {
   // Anything with several materials on one mesh is left as it was, edges and
   // all, rather than risk merging it wrongly.
   unmerged.forEach((mesh) => {
+    if (ownEdges) {
+      mesh.matrixWorld.decompose(mesh.position, mesh.quaternion, mesh.scale);
+      merged.add(mesh);
+      return;
+    }
     const lines = new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry, EDGE_ANGLE), edgeMaterial);
     mesh.add(lines);
     mesh.matrixWorld.decompose(mesh.position, mesh.quaternion, mesh.scale);
@@ -453,7 +470,7 @@ function prepare(url) {
           const model = mergeModel(gltf.scene);
           // The originals were copied into the merge; free their GPU-side copies.
           gltf.scene.traverse((child) => {
-            if (child.isMesh) child.geometry.dispose();
+            if (child.isMesh || child.isLineSegments) child.geometry.dispose();
           });
           resolve({ model, box });
         },
