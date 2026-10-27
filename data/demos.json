@@ -16,6 +16,8 @@
     "         'link' — hosted elsewhere; set url instead of slug",
     "  slug   folder name under demos/   (app and deck)",
     "  url    full external URL          (link)",
+    "  title_bn  the title in Bangla; its first letter is drawn on the card",
+    "            when there is no thumb (the card font has no Latin letters)",
     "  thumb  optional image path, e.g. /assets/img/acme-thumb.jpg",
     "  date   YYYY-MM-DD — the list sorts newest first"
   ],
@@ -23,6 +25,7 @@
   "demos": [
     {
       "title": "Room configurator",
+      "title_bn": "কক্ষ বিন্যাসক",
       "client": "City Islamic",
       "type": "app",
       "slug": "city-islamic-room-configurator-c2a549",
@@ -31,6 +34,7 @@
     },
     {
       "title": "Calligraphy frame",
+      "title_bn": "লিপিকলার ফ্রেম",
       "client": "Nazm Anwr",
       "type": "app",
       "slug": "nazm-calligraphy-frame-994fa6",
@@ -39,6 +43,7 @@
     },
     {
       "title": "Infographic installation",
+      "title_bn": "তথ্যচিত্র স্থাপনা",
       "client": "Nazm Anwr",
       "type": "app",
       "slug": "nazm-infographic-installation-f3a417",
@@ -47,6 +52,7 @@
     },
     {
       "title": "Bed",
+      "title_bn": "খাট",
       "client": "Nazm Anwr",
       "type": "app",
       "slug": "nazm-bed-8347ad",
@@ -55,6 +61,7 @@
     },
     {
       "title": "Six-hole flute designer",
+      "title_bn": "ছয় ছিদ্রের বাঁশি নকশাকার",
       "client": "Nazm Anwr",
       "type": "app",
       "slug": "nazm-flute-designer-9729a6",
@@ -63,6 +70,7 @@
     },
     {
       "title": "Tap metronome",
+      "title_bn": "টোকা তালমাপক",
       "client": "Nazm Anwr",
       "type": "app",
       "slug": "nazm-tap-metronome-5b1e7c",
@@ -71,6 +79,7 @@
     },
     {
       "title": "Coffee counter",
+      "title_bn": "কফি কাউন্টার",
       "client": "Sayor Coffee",
       "type": "app",
       "slug": "sayor-coffee-bar-4bd5cf",
@@ -79,6 +88,7 @@
     },
     {
       "title": "School",
+      "title_bn": "বিদ্যালয়",
       "client": "Pallabi School",
       "type": "app",
       "slug": "pallabi-school-511280",
@@ -87,6 +97,7 @@
     },
     {
       "title": "Residence Interior Design",
+      "title_bn": "বাসভবনের অভ্যন্তরীণ নকশা",
       "client": "Rutba",
       "type": "app",
       "slug": "rutba-residence-interior-e2710c",

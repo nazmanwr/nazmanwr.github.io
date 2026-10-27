@@ -121,7 +121,10 @@
     } else {
       var ph = document.createElement("span");
       ph.className = "placeholder";
-      ph.textContent = (d.client || d.title || "?").charAt(0).toUpperCase();
+      // The card font is Bangla-only, so the letter comes from title_bn.
+      ph.textContent = d.title_bn
+        ? d.title_bn.charAt(0)
+        : (d.client || d.title || "?").charAt(0).toUpperCase();
       media.appendChild(ph);
     }
 

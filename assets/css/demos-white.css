@@ -190,6 +190,20 @@ body { line-height: 1.5; }
   transform: scale(1.1);
 }
 
+/* The letter on a demo that has no thumbnail is set in Nazm's own face. */
+@font-face {
+  font-family: "Nazm Testa";
+  src: url("/assets/fonts/nazm-testa.ttf") format("truetype");
+  font-display: swap;
+}
+
+.card__media .placeholder {
+  font-family: "Nazm Testa", var(--font-display);
+  /* The face draws small on its em, so it needs far more than site.css's 2rem. */
+  font-size: 6rem;
+  line-height: 1;
+}
+
 .card__title,
 .card__meta,
 .card__desc {
