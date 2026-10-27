@@ -128,27 +128,12 @@
     var body = document.createElement("div");
     body.className = "card__body";
 
-    var meta = document.createElement("p");
-    meta.className = "card__meta";
-    meta.textContent = [d.client, d.date].filter(Boolean).join(" · ");
-
+    // Title only: client, date and notes stay searchable but aren't shown.
     var h = document.createElement("h3");
     h.className = "card__title";
     h.textContent = d.title || d.slug;
 
-    var badge = document.createElement("span");
-    badge.className = "badge";
-    badge.textContent = (TYPES[d.type] || {}).label || d.type || "Demo";
-    h.append(" ", badge);
-
-    body.append(meta, h);
-
-    if (d.notes) {
-      var p = document.createElement("p");
-      p.className = "card__desc";
-      p.textContent = d.notes;
-      body.appendChild(p);
-    }
+    body.appendChild(h);
 
     a.append(media, body);
     li.appendChild(a);
