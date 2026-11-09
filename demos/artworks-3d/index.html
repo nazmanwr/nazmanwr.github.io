@@ -36,7 +36,7 @@
   @media (max-width:600px){header h1{display:none}#hint{display:none}#dl{display:none}nav.walls{bottom:12px}#card{top:auto;bottom:66px}}
 </style>
 <script type="importmap">
-{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}
 </script>
 </head>
 <body>
@@ -80,10 +80,15 @@ const camera = new THREE.PerspectiveCamera(50, 1, 0.02, 200);
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true; controls.dampingFactor = 0.08;
 controls.maxPolarAngle = Math.PI * 0.58; controls.minDistance = 0.15; controls.maxDistance = 9;
+// pinch / wheel zoom toward the fingers or cursor, not just the middle of the wall
+controls.zoomToCursor = true; controls.zoomSpeed = 1.2;
+controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
 
 const SP = 150 * 0.0254;                     // wall spacing (m)
 const wallZ = w => -(w - 1) * SP;            // art face plane for wall w
 let tween = null;
+// any drag or pinch by the visitor cancels an automatic camera move
+controls.addEventListener('start', () => { tween = null; });
 function fly(pos, target, ms = 900) {
   const p0 = camera.position.clone(), t0 = controls.target.clone(), s = performance.now();
   tween = now => {
@@ -117,10 +122,17 @@ new GLTFLoader().load('nazmanwr_artworks.glb', gltf => {
    err => { document.getElementById('load').textContent = 'Could not load the gallery model.'; console.error(err); });
 
 // tap a piece -> card + fly to it
-const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(); let down = null;
-canvas.addEventListener('pointerdown', e => down = [e.clientX, e.clientY]);
+// a tap is one finger, down and up in place. Lifting the fingers after a pinch is not a tap.
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(); let down = null, multi = false;
+const active = new Set();
+canvas.addEventListener('pointerdown', e => { active.add(e.pointerId); if (active.size > 1) multi = true; else { multi = false; down = [e.clientX, e.clientY]; } });
+const lift = e => { active.delete(e.pointerId); };
+canvas.addEventListener('pointercancel', e => { lift(e); multi = true; });
 canvas.addEventListener('pointerup', e => {
+  const wasMulti = multi || active.size > 1; lift(e);
+  if (wasMulti) { down = null; return; }
   if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 6) return;
+  down = null;
   ndc.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
   ray.setFromCamera(ndc, camera);
   const hit = ray.intersectObjects(arts, true)[0];
