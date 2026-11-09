@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Artworks in 3D — Nazm Anwr</title>
+<meta name="description" content="Walk through 50 calligraphy works by Nazm Anwr at their real sizes, hung on four gallery walls.">
+<meta name="theme-color" content="#f2f0ec">
+<meta property="og:title" content="Artworks in 3D — Nazm Anwr">
+<meta property="og:url" content="https://nazmanwr.com/demos/artworks-3d/">
+<style>
+  :root{--bg:#f2f0ec;--ink:#1d1b18;--muted:#6b665e;--panel:rgba(250,249,246,.94);--line:#d9d4ca;--accent:#8a5a2b}
+  @media (prefers-color-scheme:dark){:root{--bg:#191816;--ink:#efece6;--muted:#a39d92;--panel:rgba(30,29,27,.92);--line:#3a3732;--accent:#d29a5c}}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:15px/1.45 Georgia,"Times New Roman",serif;overflow:hidden}
+  #c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  header{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;gap:14px;padding:12px 16px;background:linear-gradient(var(--bg),transparent);pointer-events:none}
+  header a,header nav{pointer-events:auto}
+  header .home{color:var(--ink);text-decoration:none;font-size:13px;letter-spacing:.18em;text-transform:uppercase}
+  header h1{margin:0;font-size:15px;font-weight:normal;color:var(--muted)}
+  nav.walls{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px;backdrop-filter:blur(8px)}
+  nav.walls button{font:inherit;font-size:13px;border:0;background:transparent;color:var(--ink);padding:7px 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
+  nav.walls button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+  #card{position:fixed;right:16px;top:64px;width:min(320px,calc(100vw - 32px));background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;backdrop-filter:blur(8px);display:none}
+  #card.on{display:block}
+  #card .no{font-size:12px;letter-spacing:.12em;color:var(--muted)}
+  #card h2{margin:4px 0 6px;font-size:18px;font-weight:normal;line-height:1.25}
+  #card .size{color:var(--accent)}
+  #card .row{display:flex;gap:10px;margin-top:12px;font-size:13px}
+  #card a,#card button{color:var(--ink);font:inherit;font-size:13px;background:none;border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer;text-decoration:none}
+  #hint{position:fixed;left:16px;bottom:70px;font-size:12px;color:var(--muted);max-width:260px}
+  #load{position:fixed;inset:0;display:grid;place-items:center;background:var(--bg);font-size:14px;color:var(--muted);transition:opacity .4s}
+  #load.done{opacity:0;pointer-events:none}
+  #dl{position:fixed;right:16px;bottom:22px;font-size:12px;color:var(--muted)}
+  #dl a{color:var(--muted)}
+  @media (max-width:600px){header h1{display:none}#hint{display:none}#dl{display:none}nav.walls{bottom:12px}#card{top:auto;bottom:66px}}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<canvas id="c" aria-label="3D gallery of artworks"></canvas>
+<header>
+  <a class="home" href="/demos/">← Demos</a>
+  <h1>Artworks in 3D · 50 pieces at their real sizes</h1>
+</header>
+<nav class="walls" aria-label="Gallery walls">
+  <button data-w="1" aria-pressed="true">Wall 1</button>
+  <button data-w="2">Wall 2</button>
+  <button data-w="3">Wall 3</button>
+  <button data-w="4">Wall 4</button>
+</nav>
+<div id="card" role="dialog" aria-live="polite">
+  <div class="no"></div><h2></h2><div class="size"></div>
+  <div class="row"><a class="img" target="_blank" rel="noopener">View photo</a><button class="close">Close</button></div>
+</div>
+<div id="hint">Drag to look around, scroll or pinch to zoom. Tap a piece to see its title and size.</div>
+<div id="dl"><a href="nazmanwr_artworks.glb" download>Download GLB</a></div>
+<div id="load">Loading gallery… <span id="pct"></span></div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.NeutralToneMapping ?? THREE.ACESFilmicToneMapping;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#f2f0ec');
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.add(new THREE.HemisphereLight(0xffffff, 0xb8b2a8, 0.6));
+const sun = new THREE.DirectionalLight(0xffffff, 0.6); sun.position.set(2, 6, 8); scene.add(sun);
+
+const camera = new THREE.PerspectiveCamera(50, 1, 0.02, 200);
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.maxPolarAngle = Math.PI * 0.58; controls.minDistance = 0.15; controls.maxDistance = 9;
+
+const SP = 150 * 0.0254;                     // wall spacing (m)
+const wallZ = w => -(w - 1) * SP;            // art face plane for wall w
+let tween = null;
+function fly(pos, target, ms = 900) {
+  const p0 = camera.position.clone(), t0 = controls.target.clone(), s = performance.now();
+  tween = now => {
+    const k = Math.min(1, (now - s) / ms), e = k < .5 ? 2*k*k : 1 - Math.pow(-2*k + 2, 2) / 2;
+    camera.position.lerpVectors(p0, pos, e); controls.target.lerpVectors(t0, target, e);
+    if (k === 1) tween = null;
+  };
+}
+function wallView(w, instant) {
+  const z = wallZ(w), narrow = innerWidth / innerHeight < 1;
+  const pos = new THREE.Vector3(0, 1.55, z + (narrow ? 3.4 : 3.2)), tgt = new THREE.Vector3(0, 1.45, z);
+  document.querySelectorAll('nav.walls button').forEach(b => b.setAttribute('aria-pressed', b.dataset.w == w));
+  if (instant) { camera.position.copy(pos); controls.target.copy(tgt); } else fly(pos, tgt);
+}
+document.querySelectorAll('nav.walls button').forEach(b => b.onclick = () => { hideCard(); wallView(+b.dataset.w); });
+
+const card = document.getElementById('card');
+function hideCard(){ card.classList.remove('on'); }
+card.querySelector('.close').onclick = hideCard;
+
+const arts = [];
+new GLTFLoader().load('nazmanwr_artworks.glb', gltf => {
+  scene.add(gltf.scene);
+  gltf.scene.traverse(o => {
+    if (o.userData && o.userData.num) arts.push(o);
+    if (o.isMesh && o.material.map) { o.material.map.anisotropy = renderer.capabilities.getMaxAnisotropy(); }
+  });
+  wallView(1, true);
+  document.getElementById('load').classList.add('done');
+}, e => { if (e.total) document.getElementById('pct').textContent = Math.round(e.loaded / e.total * 100) + '%'; },
+   err => { document.getElementById('load').textContent = 'Could not load the gallery model.'; console.error(err); });
+
+// tap a piece -> card + fly to it
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(); let down = null;
+canvas.addEventListener('pointerdown', e => down = [e.clientX, e.clientY]);
+canvas.addEventListener('pointerup', e => {
+  if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 6) return;
+  ndc.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  const hit = ray.intersectObjects(arts, true)[0];
+  if (!hit) return;
+  let o = hit.object; while (o && !o.userData.num) o = o.parent;
+  const d = o.userData;
+  card.querySelector('.no').textContent = 'No. ' + d.num + ' · Wall ' + d.wall;
+  card.querySelector('h2').textContent = d.title;
+  card.querySelector('.size').textContent = d.size;
+  card.querySelector('.img').href = '/assets/img/art/full/' + d.num + '.jpg';
+  card.classList.add('on');
+  const box = new THREE.Box3().setFromObject(o), c = box.getCenter(new THREE.Vector3()), sz = box.getSize(new THREE.Vector3());
+  const span = Math.max(sz.x, sz.y * camera.aspect) ;
+  const dist = Math.min(3.3, Math.max(0.25, span / camera.aspect / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))) * 1.6 + 0.1));
+  fly(new THREE.Vector3(c.x, c.y, box.max.z + dist), c);
+  document.querySelectorAll('nav.walls button').forEach(b => b.setAttribute('aria-pressed', b.dataset.w == d.wall));
+});
+
+function resize(){ renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); }
+addEventListener('resize', resize); resize();
+renderer.setAnimationLoop(now => { if (tween) tween(now); controls.update(); renderer.render(scene, camera); });
+</script>
+</body>
+</html>

@@ -103,6 +103,15 @@
       "slug": "rutba-residence-interior-e2710c",
       "date": "2026-10-15",
       "notes": "Textured 3D model in SketchUp style, edges on. Drag to orbit, pinch to zoom. 57 MB: open it once on wifi before the meeting."
+    },
+    {
+      "title": "Artworks in 3D",
+      "title_bn": "ত্রিমাত্রিক শিল্পকর্ম",
+      "client": "Nazm Anwr",
+      "type": "app",
+      "slug": "artworks-3d",
+      "date": "2026-11-09",
+      "notes": "50 calligraphy works at their real sizes on four gallery walls. Drag to look around, pinch to zoom, tap a piece for its title and size. 8 MB: open it once on wifi before the meeting."
     }
   ]
 }
