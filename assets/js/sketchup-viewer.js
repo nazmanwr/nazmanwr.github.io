@@ -449,11 +449,61 @@ function labelFor(url) {
   return button ? button.textContent.trim() : 'model';
 }
 
+function showPercent(url, pct) {
+  if (url === wanted && !loader.hidden) {
+    status.textContent = `Loading ${labelFor(url)}… ${pct}%`;
+  }
+}
+
+/* The server sends .glb files gzipped, so Content-Length is the compressed
+   size while the bytes counted arrive unpacked, and a progress bar built on
+   it overshoots to 200% and more. A .glb states its own full length in bytes
+   8–11 of its header, so the percentage is counted against that instead. */
+async function download(url) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`);
+  const reader = response.body.getReader();
+  const chunks = [];
+  let loaded = 0;
+  let total = 0;
+  let last = -1;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    loaded += value.length;
+    if (!total && loaded >= 12) {
+      const head = chunks.length === 1 ? value : concat(chunks, loaded);
+      const view = new DataView(head.buffer, head.byteOffset, 12);
+      if (view.getUint32(0, true) === 0x46546c67) total = view.getUint32(8, true);   // 'glTF'
+    }
+    if (total) {
+      const pct = Math.min(100, Math.floor((loaded / total) * 100));
+      if (pct !== last) showPercent(url, (last = pct));
+    }
+  }
+  showPercent(url, 100);
+  return concat(chunks, loaded).buffer;
+}
+
+function concat(chunks, length) {
+  const out = new Uint8Array(length);
+  let at = 0;
+  for (const chunk of chunks) {
+    out.set(chunk.subarray(0, Math.min(chunk.length, length - at)), at);
+    at += chunk.length;
+    if (at >= length) break;
+  }
+  return out;
+}
+
 function prepare(url) {
   if (!prepared.has(url)) {
-    prepared.set(url, new Promise((resolve, reject) => {
-      new GLTFLoader().load(
-        url,
+    prepared.set(url, download(url).then((buffer) => new Promise((resolve, reject) => {
+      const base = new URL('.', new URL(url, location.href)).href;
+      new GLTFLoader().parse(
+        buffer,
+        base,
         (gltf) => {
           const converted = new Map();
           gltf.scene.traverse((mesh) => {
@@ -474,17 +524,11 @@ function prepare(url) {
           });
           resolve({ model, box });
         },
-        (event) => {
-          if (url === wanted && !loader.hidden && event.lengthComputable && event.total) {
-            const pct = Math.round((event.loaded / event.total) * 100);
-            status.textContent = `Loading ${labelFor(url)}… ${pct}%`;
-          }
-        },
-        (err) => {
-          prepared.delete(url);   // let the next tap try again
-          reject(err);
-        }
+        reject
       );
+    })).catch((err) => {
+      prepared.delete(url);   // let the next tap try again
+      throw err;
     }));
   }
   return prepared.get(url);
@@ -517,8 +561,8 @@ function show(url) {
   // Only cover the screen if the model is not already waiting in memory.
   Promise.resolve().then(() => {
     if (!ready && url === wanted) {
-      status.textContent = `Loading ${labelFor(url)}…`;
       loader.hidden = false;
+      showPercent(url, 0);
     }
   });
   return prepared.get(url);
