@@ -121,6 +121,15 @@
       "slug": "banani-residential-interior-0da538",
       "date": "2026-11-09",
       "notes": "Textured 3D model in SketchUp style, edges on. Drag to orbit, pinch to zoom. 76 MB and 810k triangles: open it once on wifi well before the meeting."
+    },
+    {
+      "title": "G+2.5 Residence, Jessore",
+      "title_bn": "জি+২.৫ বাসভবন, যশোর",
+      "client": "Jessore residence",
+      "type": "app",
+      "slug": "jessore-g2-5-residence-b66f45",
+      "date": "2026-11-11",
+      "notes": "Textured 3D model in SketchUp style, edges on. Drag to orbit, pinch to zoom. 4 MB, quick to open."
     }
   ]
 }
