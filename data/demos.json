@@ -21,7 +21,6 @@
     "  thumb  optional image path, e.g. /assets/img/acme-thumb.jpg",
     "  date   YYYY-MM-DD — the list sorts newest first"
   ],
-
   "demos": [
     {
       "title": "Room configurator",
@@ -130,6 +129,15 @@
       "slug": "jessore-g2-5-residence-b66f45",
       "date": "2026-11-11",
       "notes": "Textured 3D model in SketchUp style, edges on. Drag to orbit, pinch to zoom. 4 MB, quick to open."
+    },
+    {
+      "title": "G+5 Residence",
+      "title_bn": "জি+৫ বাসভবন",
+      "client": "G+5 residence",
+      "type": "app",
+      "slug": "g5-residence-2002d3",
+      "date": "2026-11-11",
+      "notes": "Textured 3D model in SketchUp style, edges on. Drag to orbit, pinch to zoom. 3 MB, quick to open."
     }
   ]
 }
