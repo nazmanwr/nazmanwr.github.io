@@ -138,6 +138,15 @@
       "slug": "g5-residence-2002d3",
       "date": "2026-11-11",
       "notes": "Textured 3D model in SketchUp style, edges on. Drag to orbit, pinch to zoom. 3 MB, quick to open."
+    },
+    {
+      "title": "G+7 Residential",
+      "title_bn": "জি+৭ আবাসিক ভবন",
+      "client": "G+7 residence",
+      "type": "app",
+      "slug": "g7-residential-d0713e",
+      "date": "2026-11-16",
+      "notes": "Textured 3D model in SketchUp style, edges on. Drag to orbit, pinch to zoom. 2 MB, quick to open."
     }
   ]
 }
