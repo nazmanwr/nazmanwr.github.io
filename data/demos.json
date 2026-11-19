@@ -147,6 +147,15 @@
       "slug": "g7-residential-d0713e",
       "date": "2026-11-16",
       "notes": "Textured 3D model in SketchUp style, edges on. Drag to orbit, pinch to zoom. 2 MB, quick to open."
+    },
+    {
+      "title": "Handpan",
+      "title_bn": "হ্যান্ডপ্যান",
+      "client": "Nazm Anwr",
+      "type": "app",
+      "slug": "nazm-handpan-c3f71a",
+      "date": "2026-11-20",
+      "notes": "A playable handpan. Tap the notes, several at once for chords; tap the bare shell for a slap. Seven scales, any key."
     }
   ]
 }
