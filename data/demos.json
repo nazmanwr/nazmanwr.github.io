@@ -156,6 +156,15 @@
       "slug": "nazm-handpan-c3f71a",
       "date": "2026-11-20",
       "notes": "A playable handpan. Tap the notes, several at once for chords; tap the bare shell for a slap. Seven scales, any key."
+    },
+    {
+      "title": "TV Cabinet",
+      "title_bn": "টিভি ক্যাবিনেট",
+      "client": "Audri",
+      "type": "app",
+      "slug": "audri-tv-cabinet-586ce1",
+      "date": "2026-11-21",
+      "notes": "Textured 3D model in SketchUp style, edges on. Drag to orbit, pinch to zoom. 2 MB, quick to open."
     }
   ]
 }
